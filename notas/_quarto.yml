@@ -1,0 +1,19 @@
+project:
+  type: book
+
+book:
+  title: "Series de tiempo jerárquicas & agrupadas"
+  subtitle: "Métodos analíticos | Proyecto final"
+  author: 
+    - "José Luis Roberto Zárate Cortés"
+    - "Uriel Martínez Sánchez"
+  chapters:
+    - index.qmd
+    - 01-proyecto.qmd
+
+format:
+  html:
+    theme: journal
+    lang: es
+    font-size: 1.1em
+    code-fold: false

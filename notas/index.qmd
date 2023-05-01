@@ -1,0 +1,7 @@
+# Referencias {-}
+
+- Hyndman, R.J., & Athanasopoulos, G. (2021) Forecasting: principles and practice, 3rd edition, OTexts: Melbourne, Australia. OTexts.com/fpp3. Accessed on April 30, 2023.
+  - [Capítulo 11](https://otexts.com/fpp3/hierarchical.html)
+
+- Los datos utilizados fueron sacados de [kaggle](https://www.kaggle.com/competitions/tabular-playground-series-sep-2022/data?select=train.csv)
+

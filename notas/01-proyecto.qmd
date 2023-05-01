@@ -1,0 +1,4 @@
+# Series de tiempo agrupadas o jerárquicas {-}
+
+
+
