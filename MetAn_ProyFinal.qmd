@@ -1,0 +1,18 @@
+---
+title: "Review and Study Case on Forecasting Hierarchical or Grouped Time Series"
+author: "Uriel Martinez & José Zarate"
+format: html
+editor: visual
+---
+
+
+```{r}
+
+install.packages()
+
+```
+
+** Introducción
+
+Un aspecto relevante para los tomadores de decisión es el hecho de poder tener información confiable y consistente, de tal forma que las proyecciones o valores resultantes sean razonables. Cuand se realizan proyecciones en series de tiempo, nos enfrentamos a un cojunto de elementos que debemos atacar de forma secuencial y sencillla para poder derterminar los patrones naturales que emergen de la serie, tales como tendencia, estacionalidad en diversas fases, 
+
