@@ -10,6 +10,8 @@ book:
   chapters:
     - index.qmd
     - 01-proyecto.qmd
+    - 02-proyecto.qmd
+    - 03-proyecto.qmd
 
 format:
   html:

@@ -1,0 +1,20 @@
+# Aproximaciones por nivel
+
+
+## Enfoque ascendente (bottom-up)
+
+
+## Enfoque descendente (top-down)
+
+
+### Average historical proportions
+
+
+### Proportions of the historical averages
+
+
+### Forecast proportions
+
+
+## Enfoque middle-out
+

@@ -1,4 +1,44 @@
-# Series de tiempo agrupadas o jerárquicas {-}
+# Series de tiempo agrupadas o jerárquicas
+
+```{r}
+#| code-fold: true
+#| warning: false
+library(readr)
+library(dplyr)
+library(lubridate)
+```
+
+Aquí podemos añadir una pequeña **Introducción**
+
+## Objetivo
+
+
+## Planteamiento del problema
+
+Para utilizar las técnicas discutidas en esta sección se planterá el problema de pronosticar las ventas de una empresa a lo largo de los años **2017 a 2020** con una estructura **jerárquica** en los datos. El conjunto de datos original cuenta con observaciones a nivel diario, sin embargo, con el fin de simplificar el problema y ejemplificar la solución de este tipo de estructuras de series temporales se optó por presentar la serie a **nivel mensual**.
+
+La estructura de la serie de tiempo cuenta con 3 niveles jerárquicos:
+
+- **6 países**: Belgium, France, Germany, Italy, Poland, Spain.
+- **2 tipos de tienda**: KaggleMart, KaggleRama.
+- **4 productos**: Kaggle Advanced Techniques, Kaggle for Kids: One Smart Goose, Kaggle Getting Started, Kaggle Recipe Book.
+
+![](figuras/series_de_tiempo_hierarchical.jpg)
+
+```{r}
+#| message: false
+sales <- read_delim("../datos/sales.csv")
+sales_m <- sales |>
+    mutate(t = (year(date)-year(min(date)))*12 + (month(date)-month(min(date)))) |>
+    mutate(date = year(date)*100+month(date)) |>
+    group_by(date,t,country,store,product) |>
+    summarise(num_sold = sum(num_sold,na.rm = TRUE))
+```
+
+## Series de tiempo jerárquicas
+
+
+## Series de tiempo agrupadas
 
 
 
