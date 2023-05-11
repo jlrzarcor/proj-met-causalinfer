@@ -1,20 +1,38 @@
 # Aproximaciones por nivel
 
+En las series de tiempo (datos secuenciales) una de las características principales es su natural estructura compleja de *autocorrelación* que implica que las observaciones no son independientes. En general, presentan patrones de tendencia, ciclicidad o autocorrelación que requieren un entendimiento profundo para poder analizar correctamente la serie, ya sea para realizar descripción e inferencia acerca de su estructura o para generar predicciones acerca de valores futuros.
+
+Los modelos de espacio de estados (bayesianos dinámicos) nos permite modelar la estructura de una serie de tiempo de forma modular, además:
+
+-   Mayor flexibilidad en cuanto a las estructuras que podemos usar, y cómo usar información acerca de la dinámica de la serie de tiempo (incluyendo aspectos de modelos ARIMA).
+-   Una forma estándar de tratar con valores faltantes, series irregulares, o varias observaciones contemporáneas.
+-   Una forma estándar de producir pronósticos puntuales, en intervalos, o por distribuciones.
+-   Una forma estándar de permitir que el modelo se adapte en el tiempo a cambios estructurales (por ejemplo, cambios de patrones de estacionalidad, efectos diferentes de covariables, etc.)
+
+Por otro lado, regularmente las series de tiempo pueden estar desagregadas por diversos atributos específicos de interés para el investigador. Tales atributos podrían desagregarse a su vez en categrorías o subcategorías más detalladas, esto es, categorías anidadas en categorías de grupos de mayor tamaño, por lo que a esta estructura de agregación jerárquica en las series de tiempo le llamamos naturalmente **"Series de Tiempo Jerárquicas"**, que usualmente resultan a causa de las divisiones geográficas.
+
+Para complementar e ilustrar nuestra investigación sobre Predicción en Modelos de Series de Tiempo Jerárquicas, se decidió utilizar siguiente dataset de Kaggle [Tabular Playground Series Sep2022](https://www.kaggle.com/competitions/tabular-playground-series-sep-2022/data) El objetivo consiste en predecir un año completo de ventas para 4 artículos de 2 tiendas en 6 distintos países, por lo que, de acuerdo a lo comentado anteriormente, es una serie de tiempo con estructura jerárquica. (ver sección XXX para ampliar información del dataset). El siguiente diagrama nos permite visualizar tal estructura:
+
+![](figuras/series_de_tiempo_hierarchical.jpg)
+
+Usualmente generamos predicciones desagregadas a partir de series de tiempo desagregadas y requerimos que tales predicciones se adicionen en la misma forma que la estructura en los datos. En nuestro ejemplo, las predicciones de cada tienda se adicionan para generar la predicción de cada país y éstas a su vez para generar la predicción de ventas total.
+
+Nuestro objetivo es presentar y discutir los métodos de predicción para colecciones de series de tiempo bajo el reto que tales predicciones guarden congruencia a través de la estructura de agregación.
+
+
+
+
 
 ## Enfoque ascendente (bottom-up)
 
-
 ## Enfoque descendente (top-down)
 
+Bajo este enfoque, el método consiste en generar las predicciones para el Total de las series $y_t$ para postreriormente desagregarlas bajo la secuencia jerárquica.
 
 ### Average historical proportions
 
-
 ### Proportions of the historical averages
-
 
 ### Forecast proportions
 
-
 ## Enfoque middle-out
-
