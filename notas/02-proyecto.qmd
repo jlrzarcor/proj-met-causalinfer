@@ -11,17 +11,82 @@ Los modelos de espacio de estados (bayesianos dinámicos) nos permite modelar la
 
 Por otro lado, regularmente las series de tiempo pueden estar desagregadas por diversos atributos específicos de interés para el investigador. Tales atributos podrían desagregarse a su vez en categrorías o subcategorías más detalladas, esto es, categorías anidadas en categorías de grupos de mayor tamaño, por lo que a esta estructura de agregación jerárquica en las series de tiempo le llamamos naturalmente **"Series de Tiempo Jerárquicas"**, que usualmente resultan a causa de las divisiones geográficas.
 
+Una estructura de agregación más compleja aún surge cuando podemos utilizar dos categorías jerárquicas juntas, e.g. jerarquías por producto y por región geográfica. En este caso se le conoce como **"Series de Tiempo Agrupadas**
+
 Para complementar e ilustrar nuestra investigación sobre Predicción en Modelos de Series de Tiempo Jerárquicas, se decidió utilizar siguiente dataset de Kaggle [Tabular Playground Series Sep2022](https://www.kaggle.com/competitions/tabular-playground-series-sep-2022/data) El objetivo consiste en predecir un año completo de ventas para 4 artículos de 2 tiendas en 6 distintos países, por lo que, de acuerdo a lo comentado anteriormente, es una serie de tiempo con estructura jerárquica. (ver sección XXX para ampliar información del dataset). El siguiente diagrama nos permite visualizar tal estructura:
 
 ![](figuras/series_de_tiempo_hierarchical.jpg)
 
 Usualmente generamos predicciones desagregadas a partir de series de tiempo desagregadas y requerimos que tales predicciones se adicionen en la misma forma que la estructura en los datos. En nuestro ejemplo, las predicciones de cada tienda se adicionan para generar la predicción de cada país y éstas a su vez para generar la predicción de ventas total.
 
-Nuestro objetivo es presentar y discutir los métodos de predicción para colecciones de series de tiempo bajo el reto que tales predicciones guarden congruencia a través de la estructura de agregación.
+Nuestro objetivo es presentar y discutir los métodos de predicción para colecciones de series de tiempo jerárquicas bajo el reto que tales predicciones guarden congruencia a través de la estructura de agregación.
+
+## Series de Tiempo Jerárquicas
+
+Esencialmente, estas series se organizan en una estructura por niveles, siendo el nivel 0 la jerarquía más alta, es decir, el nivel más agragado de los datos. 
 
 
 
+$$\boldsymbol{y}_t=\boldsymbol{S}\boldsymbol{b}_{t},$$
 
+
+
+```{r}
+
+sales <- read_delim("../datos/sales.csv")
+sales_m <- sales |>
+    mutate(t = (year(date)-year(min(date)))*12 + (month(date)-month(min(date)))) |>
+    mutate(date = yearmonth(date)) |>
+    group_by(date,t,country,store,product) |>
+    summarise(num_sold = sum(num_sold,na.rm = TRUE)) |>
+    ungroup() |>
+    as_tsibble(index = date,key = c(country,store,product))
+
+install.packages()
+library(hts)
+sales_m_hts <- hts(sales_m, characters = c(3, 5))
+tourism.hts %>% aggts(levels=0:1) %>%
+  autoplot(facet=TRUE) +
+  xlab("Year") + ylab("millions") + ggtitle("Visitor nights")
+
+
+```
+
+
+$$
+\begin{bmatrix}
+    y_{t} \\
+    y_{A,t} \\
+    y_{B,t} \\
+    y_{AA,t} \\
+    y_{AB,t} \\
+    y_{AC,t} \\
+    y_{BA,t} \\
+    y_{BB,t}
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    1 & 1 & 1 & 1 & 1 \\
+    1 & 1 & 1 & 0 & 0 \\
+    0 & 0 & 0 & 1 & 1 \\
+    1  & 0  & 0  & 0  & 0  \\
+    0  & 1  & 0  & 0  & 0  \\
+    0  & 0  & 1  & 0  & 0  \\
+    0  & 0  & 0  & 1  & 0  \\
+    0  & 0  & 0  & 0  & 1
+  \end{bmatrix}
+  \begin{bmatrix}
+    y_{AA,t} \\
+    y_{AB,t} \\
+    y_{AC,t} \\
+    y_{BA,t} \\
+    y_{BB,t}
+  \end{bmatrix}
+$$
+
+
+
+## Series de Tiempo Agrupadas
 
 ## Enfoque ascendente (bottom-up)
 
@@ -29,10 +94,20 @@ Nuestro objetivo es presentar y discutir los métodos de predicción para colecc
 
 Bajo este enfoque, el método consiste en generar las predicciones para el Total de las series $y_t$ para postreriormente desagregarlas bajo la secuencia jerárquica.
 
-### Average historical proportions
+### Proporciones históricas promedio (**Average historical proportions**)
 
 ### Proportions of the historical averages
 
 ### Forecast proportions
 
-## Enfoque middle-out
+## Enfoque *middle-out*
+
+## *Mapping Matrices*
+
+## Enfoque de Reconciliación Óptima
+
+Sin profundizar mucho en este tema, haremos un esbozo sobre este enfoque, en el que buscamos la matriz $G$ que minimice el error de predicción para el conjunto de predicciones coherentes que hayamos realizado.
+
+Supongamos que logramos generar predicciones coherentes bajo la ecuación (revisada en la sección anterior):
+
+$$\tilde{\boldsymbol{y}}_h=\boldsymbol{S}\boldsymbol{G}\hat{\boldsymbol{y}}_h$$

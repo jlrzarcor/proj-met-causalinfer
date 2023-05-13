@@ -26,8 +26,7 @@ instalar <- function(paquete) {
 ## *******   Defining required libraries to install and load   *******
 
 ## Use this vector to indicate libraries to load.
-paquetes <- c("tidyverse", "lubridate", "glmnet", "fpp3", "bsts")
-installed.packages("Diagrammer")
+paquetes <- c("tidyverse", "lubridate", "glmnet", "fpp3", "bsts")#, "DiagrammeR")
 invisible(lapply(paquetes, instalar))
 
 ## Load piping files and review of working libraries
@@ -38,16 +37,22 @@ invisible(lapply(paquetes, instalar))
 
 \*\* Introducción
 
-Un aspecto relevante para los tomadores de decisión es el hecho de poder tener información confiable y consistente, de tal forma que las proyecciones o valores resultantes sean razonables. Cuand se realizan proyecciones en series de tiempo, nos enfrentamos a un cojunto de elementos que debemos atacar de forma secuencial y sencillla para poder derterminar los patrones naturales que emergen de la serie, tales como tendencia, estacionalidad en diversas fases,
+Un aspecto relevante para los tomadores de decisión es el hecho de poder tener información confiable y consistente, de tal forma que las proyecciones o valores resultantes sean razonables. Cuando se realizan proyecciones en series de tiempo, nos enfrentamos a un cojunto de elementos que debemos atacar de forma secuencial y sencillla para poder derterminar los patrones naturales que emergen de la serie, tales como tendencia, ciclicidad, estacionalidad en diversas fases. En adición, cuando observamos datos desagregados por diversas categorías dentro de otras categorías o incluso grupos de categorías, nos enfrentamos a series de tiempo Jerárquicas o Jerárquicas agrupadas.
+
+Seleccionamos una base de datos simple de las librerias de Kaggle de datos artificiales que usaremos para poder ejemplificar los temas a revisar.
 
 
 ### DATABASE
-TO DESCRIBE SOURCE, DATABASE AND PURPOSE
+
+
 
 
 ```{r}
 
-data <- read.csv('data_kaggle/train.csv', header = T)
+data <- read.csv('data_kaggle/train.csv', header = T) |>
+  mutate(across(all_of(3:5), ~ as_factor(.x)))
+
+summary(data)
 
 ```
 
@@ -62,11 +67,27 @@ data_play <- data
 data_play <- data_play |> select(-row_id) |> 
   mutate(date = str_replace(date, pattern = "-[0-9]+$", replacement = "-01")) |> 
   mutate(across(all_of("date"), ~ ymd(.x))) |>
-  mutate(dateym = yearmonth(date)) |> relocate(dateym, .before = starts_with("date")) |> 
+  mutate(dateym = yearmonth(date)) |> relocate(dateym, .before = starts_with("date")) 
+
+
+data_play_by_all <- data_play|> 
+  group_by(dateym) |> 
+  summarize(total_sold_by_all_series = sum(num_sold))
+
+data_play_by_country <- data_play|> 
   group_by(dateym, country) |> 
   summarize(total_sold_by_country = sum(num_sold))
 
-data_play |> filter(country=="Poland")
+
+ data_play_by_store <- data_play|> 
+  group_by(dateym, store) |> 
+  summarize(total_sold_by_store = sum(num_sold))
+
+data_play_by_product <- data_play|> 
+  group_by(dateym, product) |> 
+  summarize(total_sold_by_product = sum(num_sold))
+
+
 ```
 
 
@@ -75,9 +96,24 @@ data_play |> filter(country=="Poland")
 
 
 ```{r}
+#| fig-width: 4
+#| fig-height: 3
+ggplot(data |> group_by(date) |> summarize(total = sum(num_sold)) |> mutate_at("date", ~ymd(.x)), aes(x = date, y = total)) + geom_line() + geom_point()
 
-ggplot(data_play, aes(x = dateym, y = total_sold_by_country)) +
-  geom_line() + geom_jitter() + facet_wrap(~ country)
+ggplot(data_play_by_all, aes(x = dateym, y = total_sold_by_all_series)) +
+  geom_line() + geom_point()
+
+ggplot(data_play_by_store, aes(x = dateym, y = total_sold_by_store)) +
+  geom_line() + geom_point() + facet_wrap(~ store)
+
+datats <- data |> mutate_at("date", ~ymd(.x)) |>
+  group_by(date, country) |> 
+  summarize(total = sum(num_sold)) |> 
+  arrange(date) |> 
+  ungroup() |> 
+  as_tsibble(index = date, key = c(country))
+
+autoplot(datats, total , alpha = 0.8)
 
 ```
 
