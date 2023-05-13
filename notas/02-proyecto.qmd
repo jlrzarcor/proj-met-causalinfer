@@ -13,7 +13,7 @@ Por otro lado, regularmente las series de tiempo pueden estar desagregadas por d
 
 Una estructura de agregación más compleja aún surge cuando podemos utilizar dos categorías jerárquicas juntas, e.g. jerarquías por producto y por región geográfica. En este caso se le conoce como **"Series de Tiempo Agrupadas**
 
-Para complementar e ilustrar nuestra investigación sobre Predicción en Modelos de Series de Tiempo Jerárquicas, se decidió utilizar siguiente dataset de Kaggle [Tabular Playground Series Sep2022](https://www.kaggle.com/competitions/tabular-playground-series-sep-2022/data) El objetivo consiste en predecir un año completo de ventas para 4 artículos de 2 tiendas en 6 distintos países, por lo que, de acuerdo a lo comentado anteriormente, es una serie de tiempo con estructura jerárquica. (ver sección XXX para ampliar información del dataset). El siguiente diagrama nos permite visualizar tal estructura:
+Para complementar e ilustrar nuestra investigación sobre Predicción en Modelos de Series de Tiempo Jerárquicas, se decidió utilizar siguiente dataset de Kaggle [Tabular Playground Series Sep2022](https://www.kaggle.com/competitions/tabular-playground-series-sep-2022/data) El objetivo consiste en predecir un año completo de ventas para 4 artículos de 2 tiendas en 6 distintos países, por lo que, de acuerdo a lo comentado anteriormente, es una serie de tiempo con estructura jerárquica. (ver sección 1 para ampliar información sobre el _dataset_). El siguiente diagrama nos permite visualizar tal estructura:
 
 ![](figuras/series_de_tiempo_hierarchical.jpg)
 
@@ -21,36 +21,61 @@ Usualmente generamos predicciones desagregadas a partir de series de tiempo desa
 
 Nuestro objetivo es presentar y discutir los métodos de predicción para colecciones de series de tiempo jerárquicas bajo el reto que tales predicciones guarden congruencia a través de la estructura de agregación.
 
+{{< pagebreak >}}
+
 ## Series de Tiempo Jerárquicas
 
-Esencialmente, estas series se organizan en una estructura por niveles, siendo el nivel 0 la jerarquía más alta, es decir, el nivel más agragado de los datos. 
+Esencialmente, estas series se organizan en una estructura por niveles, siendo el nivel 0 la jerarquía más alta, es decir, el nivel de mayor agregación de los datos.
 
+La siguiente figura nos permitira conceptualizar de forma intuitiva las estructuras jerárquicas y servirá como base para construir las ecuaciones y notación necesaria.
 
+```{r, fig.cap="Figure: Diagrama de árbol de una estructura jerárquica de 2 niveles"}
 
-$$\boldsymbol{y}_t=\boldsymbol{S}\boldsymbol{b}_{t},$$
-
-
-
-```{r}
-
-sales <- read_delim("../datos/sales.csv")
-sales_m <- sales |>
-    mutate(t = (year(date)-year(min(date)))*12 + (month(date)-month(min(date)))) |>
-    mutate(date = yearmonth(date)) |>
-    group_by(date,t,country,store,product) |>
-    summarise(num_sold = sum(num_sold,na.rm = TRUE)) |>
-    ungroup() |>
-    as_tsibble(index = date,key = c(country,store,product))
-
-install.packages()
-library(hts)
-sales_m_hts <- hts(sales_m, characters = c(3, 5))
-tourism.hts %>% aggts(levels=0:1) %>%
-  autoplot(facet=TRUE) +
-  xlab("Year") + ylab("millions") + ggtitle("Visitor nights")
-
+#| code-fold: true
+grViz("
+digraph {
+  graph [ranksep = 0.7, fontsize = 11]
+  node [shape = circle, style = filled, width = 1, fontcolor = blue, fontname = Helvetica, fontsize = 19]
+  node [color = green]
+    y  [label = Total]
+  node [color = steelblue]
+    A  [label = A]
+    AA [label = AA]
+    AB [label = AB]
+    AC [label = AC]
+  node [color = yellow]
+    B  [label = B]
+    BA [label = BA]
+    BB [label = BC]
+  edge [minlen = 2, color = gray, arrowsize = 0]
+    y -> A
+    y -> B
+    A -> AA
+    A -> AB
+    A -> AC
+    B -> BA
+    B -> BB
+    
+{ rank = same; A; B }
+{ rank = same; AA; AB; AC; BA; BB }
+}
+", width = 600, height = 300
+)
 
 ```
+
+
+Denotemos la $t$th observación por $y_{t}$ donde $t=1,...,T$. En el gráfico anteriro podemos osbervar que la estructura jerárquica nos muestra que el Total está desagregado en 2 series $A$ y $B$ en el nivel 1, que a su vez se desagregan en 3 y 2 series respectivamente en el nivel más bajo. Esto implica que tenemos 8 (1, 2, 5) series, con  5 en el último nivel de la jerarquía.
+
+Para cualquier tiempo $t$, las observaciones en el último nivel inferior de la jerarquía deben sumar con las observaciones de las series superiores. Por tanto, podemos construir ecuaciones de agregación restricta (por llamarles de alguna forma):
+
+$$y_{t}=y_{AA,t}+y_{AB,t}+y_{AC,t}+y_{BA,t}+y_{BB,t}$$
+
+equivalente a $$y_{t}=y_{A,t}+y_{B,t}$$
+
+con $y_{A,t}=y_{AA,t}+y_{AB,t}+y_{AC,t}$ y $y_{B,t}=+y_{BA,t}+y_{BB,t}$
+
+Por practicidad, es recomendable que utilicemos una notación matricial (por ser más compacta). Básicamente, buscamos una matriz que induzca la forma en que las series inferiores deben agregarse. Para ello, contruimos una matriz de acumulación $S$ de orden $n \times m$ de la siguiente forma (con base a la estructura de nuestro ejemplo):
 
 
 $$
@@ -83,7 +108,49 @@ $$
     y_{BB,t}
   \end{bmatrix}
 $$
+cuya ecuación queda definida por:
+$$\boldsymbol{y}_t=\boldsymbol{S}\boldsymbol{b}_{t},$$
 
+donde:
+> $y_t$: vector $n$-dimensional con todas las observaciones de la jerarquía en el tiempo $t$
+> $\boldsymbol{S}$: matriz de acumulación
+> $\boldsymbol{b}_t$: es un vector $m$-dimensional de las observaciones en el nivel último inferior de la jerarquía.
+
+*¿Qué representa nuestra matriz, cómo induce las relaciones de jerarquía, cómo se construye?*
+
+1. La primer fila de la matriz representa la ecuación (1), la serie en el nivel más alto de la jerarquía
+2. En este caso, la segunda y tercer fila representan la siguiente ecuación correspondientes a las series $A$ y $B$ para el nivel 2 de nuestro ejemplo
+$\vdots$ (similar al nivel 2, se construyen niveles adicionales inferiores hasta llegar  al penúltimo nivel)
+n. El último nivel deberá ser presentado por una matriz identidad $I_m$.
+
+
+**Ejemplo. Kaggle Tabular Playground Series - Sep 2022**
+
+
+
+
+
+
+```{r}
+
+sales <- read_delim("../datos/sales.csv")
+sales_m <- sales |>
+    mutate(t = (year(date)-year(min(date)))*12 + (month(date)-month(min(date)))) |>
+    mutate(date = yearmonth(date)) |>
+    group_by(date,t,country,store,product) |>
+    summarise(num_sold = sum(num_sold,na.rm = TRUE)) |>
+    ungroup() |>
+    as_tsibble(index = date,key = c(country,store,product))
+
+install.packages()
+library(hts)
+sales_m_hts <- hts(sales_m, characters = c(3, 5))
+tourism.hts %>% aggts(levels=0:1) %>%
+  autoplot(facet=TRUE) +
+  xlab("Year") + ylab("millions") + ggtitle("Visitor nights")
+
+
+```
 
 
 ## Series de Tiempo Agrupadas
@@ -111,3 +178,9 @@ Sin profundizar mucho en este tema, haremos un esbozo sobre este enfoque, en el 
 Supongamos que logramos generar predicciones coherentes bajo la ecuación (revisada en la sección anterior):
 
 $$\tilde{\boldsymbol{y}}_h=\boldsymbol{S}\boldsymbol{G}\hat{\boldsymbol{y}}_h$$
+
+| Col1 | Col2 | Col3 |
+|------|------|------|
+|      |      |      |
+|      |      |      |
+|      |      |      |

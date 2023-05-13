@@ -2,7 +2,7 @@ project:
   type: book
 
 book:
-  title: "Series de tiempo jerárquicas & agrupadas"
+  title: "PREDICCIONES EN SERIES DE TIEMPO JERÁRQUICAS O AGRUPADAS"
   subtitle: "Métodos analíticos | Proyecto final"
   author: 
     - "José Luis Roberto Zárate Cortés"

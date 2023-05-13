@@ -26,7 +26,7 @@ instalar <- function(paquete) {
 ## *******   Defining required libraries to install and load   *******
 
 ## Use this vector to indicate libraries to load.
-paquetes <- c("tidyverse", "lubridate", "glmnet", "fpp3", "bsts")#, "DiagrammeR")
+paquetes <- c("tidyverse", "lubridate", "glmnet", "fpp3", "bsts", "DiagrammeR")
 invisible(lapply(paquetes, instalar))
 
 ## Load piping files and review of working libraries

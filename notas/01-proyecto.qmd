@@ -1,21 +1,50 @@
-# Series de tiempo agrupadas o jerárquicas
+# Introducción y Definición del Problema
 
 ```{r}
 #| code-fold: true
 #| warning: false
-library(readr)
-library(dplyr)
-library(lubridate)
+
+## ID_F0 --> This function aim to install and load libraries required.
+rm(list = ls())
+
+instalar <- function(paquete) {
+  if (!require(paquete,character.only = TRUE, quietly = TRUE,
+               warn.conflicts = FALSE)) {
+    install.packages(as.character(paquete), dependecies = TRUE,
+                     repos = "http://cran.us.r-project.org")
+    library(paquete, character.only = TRUE, quietly = TRUE,
+            warn.conflicts = FALSE)
+  }
+}
+    
+## *******   Defining required libraries to install and load   *******
+
+## Use this vector to indicate libraries to load.
+paquetes <- c("tidyverse", "lubridate", "glmnet", "fpp3", "bsts", "DiagrammeR")
+invisible(lapply(paquetes, instalar))
+
+
 ```
 
-Aquí podemos añadir una pequeña **Introducción**
+**Introducción**
+
+Un aspecto relevante para los tomadores de decisión es el hecho de poder tener información confiable y consistente, de tal forma que las proyecciones o valores resultantes sean razonables. Cuando se realizan proyecciones en series de tiempo, nos enfrentamos a un cojunto de elementos que debemos atacar de forma secuencial y sencillla para poder derterminar los patrones naturales que emergen de la serie, tales como tendencia, ciclicidad, estacionalidad en diversas fases. En adición, cuando observamos datos desagregados por diversas categorías anidados dentro de categorías o incluso por agrupación de categorías, nos enfrentamos a series de tiempo Jerárquicas o Jerárquicas Agrupadas.
+
+Hemos seleccionamos una base de datos simple de las librerias de Kaggle (datos artificiales) que usaremos para poder ejemplificar los temas a desarrollar.
 
 ## Objetivo
 
+1. Realizar una investigación general sobre los métodos actuales disponibles para resolver el problema que surge en las proyecciones de series de tiempo con datos desagregados por diversos atributos de interés, ya que buscamos consistencia y coherencia en las estimaciones tanto agregadas como desagregadas.
+
+2. Implementar un caso de estudio sencillo utilizando un dataset de la librería de Kaggle que nos permita implementar las técnicas investigadas.
 
 ## Planteamiento del problema
 
 Para utilizar las técnicas discutidas en esta sección se planterá el problema de pronosticar las ventas de una empresa a lo largo de los años **2017 a 2020** con una estructura **jerárquica** en los datos. El conjunto de datos original cuenta con observaciones a nivel diario, sin embargo, con el fin de simplificar el problema y ejemplificar la solución de este tipo de estructuras de series temporales se optó por presentar la serie a **nivel mensual**.
+
+**DATABASE**
+CLI: kaggle competitions download -c tabular-playground-series-sep-2022
+[Tabular Playground Series - Sep 2022](https://www.kaggle.com/competitions/tabular-playground-series-sep-2022)
 
 La estructura de la serie de tiempo cuenta con 3 niveles jerárquicos:
 
@@ -23,9 +52,21 @@ La estructura de la serie de tiempo cuenta con 3 niveles jerárquicos:
 - **2 tipos de tienda**: KaggleMart, KaggleRama.
 - **4 productos**: Kaggle Advanced Techniques, Kaggle for Kids: One Smart Goose, Kaggle Getting Started, Kaggle Recipe Book.
 
-![](figuras/series_de_tiempo_hierarchical.jpg)
+![](figuras/series_de_tiempo_hierarchical.jpg){#fig_diagram_kaggle}
 
-```{r}
+En el siguiente resumen podemos observar las características principales de nuestra información. Al ser un base de datos artificial, no encontramos problemas como desbalanceo o valores faltantes. Como se mencionó anteriormente, tenemos 6 países, 2 categorías para tienda y 4 tipos de producto distintos.
+
+```{r, echo=FALSE}
+data <- read.csv('../data_kaggle/train.csv', header = T) |>
+  mutate(across(all_of(3:5), ~ as_factor(.x)))
+
+summary(data)
+
+```
+
+Como es usual, la siguiente tabla nos muestra las primeras observaciones de nuestros datos para poder tener una inspección rápida:
+
+```{r, echo=TRUE}
 #| message: false
 sales <- read_delim("../datos/sales.csv")
 sales_m <- sales |>
@@ -33,12 +74,11 @@ sales_m <- sales |>
     mutate(date = year(date)*100+month(date)) |>
     group_by(date,t,country,store,product) |>
     summarise(num_sold = sum(num_sold,na.rm = TRUE))
+
+head(sales_m)
 ```
 
-## Series de tiempo jerárquicas
+Con base en lo anterior, no se tiene que realizar pre-procesamiento alguno a nuestra información. Así mismo, nuestro objetivo es el poder realizar predicciones en series de tiempo jerárquicas en datos desagregados y no inferencia sobre las variables y sus relaciones, por lo que no será implementado un análisis EDA, si no que nos enfocaremos en conocer las cualidades de nuestra serie de tiempo para el tratamiento adecuado que debe considerarse en las componentes de una serie de tiempo (tendencia, ciclididad, estacionalidad, autocorrelación) previo a realizar las predicciones y aplicar las metodologías para lograr la consistencia al predecir en el modelo agregado.
 
 
-## Series de tiempo agrupadas
-
-
-
+EN DESARROLLO EL EDA DE SERIES DE TIEMPO Y ALGUNOS HALLAZGOS 
