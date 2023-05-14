@@ -1,13 +1,15 @@
-```{r, echo=FALSE}
 
-#| code-fold: true
+# Tipos de estructuras que surgen en datos desagregados
+
+```{r, echo=FALSE, include = FALSE}
+
+#| code-fold: false
 #| warning: false
 
 source("../src/utils/utils.r", encoding = 'UTF-8')
 
 ```
 
-# Aproximaciones por nivel
 
 En las series de tiempo (datos secuenciales) una de las características principales es su natural estructura compleja de *autocorrelación* que implica que las observaciones no son independientes. En general, presentan patrones de tendencia, ciclicidad o autocorrelación que requieren un entendimiento profundo para poder analizar correctamente la serie, ya sea para realizar descripción e inferencia acerca de su estructura o para generar predicciones acerca de valores futuros.
 
@@ -332,34 +334,3 @@ sales_m |>
 
 
 
-
-
-## Enfoque ascendente (bottom-up)
-
-## Enfoque descendente (top-down)
-
-Bajo este enfoque, el método consiste en generar las predicciones para el Total de las series $y_t$ para postreriormente desagregarlas bajo la secuencia jerárquica.
-
-### Proporciones históricas promedio (**Average historical proportions**)
-
-### Proportions of the historical averages
-
-### Forecast proportions
-
-## Enfoque *middle-out*
-
-## *Mapping Matrices*
-
-## Enfoque de Reconciliación Óptima
-
-Sin profundizar mucho en este tema, haremos un esbozo sobre este enfoque, en el que buscamos la matriz $G$ que minimice el error de predicción para el conjunto de predicciones coherentes que hayamos realizado.
-
-Supongamos que logramos generar predicciones coherentes bajo la ecuación (revisada en la sección anterior):
-
-$$\tilde{\boldsymbol{y}}_h=\boldsymbol{S}\boldsymbol{G}\hat{\boldsymbol{y}}_h$$
-
-| Col1 | Col2 | Col3 |
-|------|------|------|
-|      |      |      |
-|      |      |      |
-|      |      |      |

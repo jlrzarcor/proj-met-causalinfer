@@ -1,2 +1,42 @@
-# Resolución problema de ventas
 
+# Tipos de estructuras que surgen en datos desagregados
+
+```{r, echo=FALSE, include = FALSE}
+
+#| code-fold: false
+#| warning: false
+
+source("../src/utils/utils.r", encoding = 'UTF-8')
+
+```
+
+
+
+## Enfoque ascendente (bottom-up)
+
+
+
+
+
+
+
+
+## Enfoque descendente (top-down)
+
+Bajo este enfoque, el método consiste en generar las predicciones para el Total de las series $y_t$ para postreriormente desagregarlas bajo la secuencia jerárquica.
+
+### Proporciones históricas promedio (**Average historical proportions**)
+
+### Proportions of the historical averages
+
+### Forecast proportions
+
+
+
+
+
+
+
+
+
+## Enfoque *middle-out*

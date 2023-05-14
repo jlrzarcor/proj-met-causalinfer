@@ -1,0 +1,34 @@
+
+# Reconciliación en las Predicciones
+
+```{r, echo=FALSE, include = FALSE}
+
+#| code-fold: false
+#| warning: false
+
+source("../src/utils/utils.r", encoding = 'UTF-8')
+
+```
+
+
+**Matrix notation**
+
+## Mapping matrices
+
+
+
+## Reconciliación en las Predicciones
+
+
+
+## Enfoque de Reconciliación Óptima MinT (*Minimal Trace*)
+
+Sin profundizar mucho en este tema, haremos un esbozo sobre este enfoque, en el que buscamos la matriz $G$ que minimice el error de predicción para el conjunto de predicciones coherentes que hayamos realizado.
+
+Supongamos que logramos generar predicciones coherentes bajo la ecuación (revisada en la sección anterior):
+
+$$\tilde{\boldsymbol{y}}_h=\boldsymbol{S}\boldsymbol{G}\hat{\boldsymbol{y}}_h$$
+
+
+
+

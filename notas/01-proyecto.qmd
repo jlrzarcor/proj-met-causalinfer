@@ -1,8 +1,8 @@
 # Introducción y Definición del Problema
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, include=FALSE}
 
-#| code-fold: true
+#| code-fold: false
 #| warning: false
 
 source("../src/utils/utils.r", encoding = 'UTF-8')

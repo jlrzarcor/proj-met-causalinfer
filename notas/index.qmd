@@ -1,4 +1,14 @@
-### Referencias {-}
+
+
+## Inicio {-}
+
+
+### Github
+
+La documentación y desarrollo de este proyecto se localiza en el siguiente repositorio:
+[proj-met-causalinfer](https://github.com/jlrzarcor/proj-met-causalinfer)
+
+### Referencias
 
 - Hyndman, R.J., & Athanasopoulos, G. (2021) Forecasting: principles and practice, 3rd edition, OTexts: Melbourne, Australia. OTexts.com/fpp3. Accessed on April 30, 2023.
   - [Capítulo 11](https://otexts.com/fpp3/hierarchical.html)
@@ -8,3 +18,5 @@
 [Kaggle - Tabular Playground Series - Sep 2022 - Train](https://www.kaggle.com/competitions/tabular-playground-series-sep-2022/data?select=train.csv)
 
 [Kaggle - Tabular Playground Series - Sep 2022 - Test](https://www.kaggle.com/competitions/tabular-playground-series-sep-2022/data?select=test.csv)
+
+

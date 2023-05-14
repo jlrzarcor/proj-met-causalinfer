@@ -1,0 +1,21 @@
+# Predicciones para resolver el Problema de Ventas
+
+```{r, echo=FALSE, include = FALSE}
+
+#| code-fold: false
+#| warning: false
+
+source("../src/utils/utils.r", encoding = 'UTF-8')
+
+```
+
+
+
+## Datos Jerárquicos.
+
+
+
+## Datos Agrupados.
+
+
+
