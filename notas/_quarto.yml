@@ -12,10 +12,12 @@ book:
     - 01-proyecto.qmd
     - 02-proyecto.qmd
     - 03-proyecto.qmd
-
+    - 99-referencias.qmd
+bibliography: referencias/book.bib
 format:
   html:
     theme: journal
     lang: es
     font-size: 1.1em
     code-fold: false
+# Referencias {.unnumbered}

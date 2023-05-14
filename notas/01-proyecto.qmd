@@ -1,28 +1,11 @@
 # Introducción y Definición del Problema
 
-```{r}
+```{r, echo=FALSE}
+
 #| code-fold: true
 #| warning: false
 
-## ID_F0 --> This function aim to install and load libraries required.
-rm(list = ls())
-
-instalar <- function(paquete) {
-  if (!require(paquete,character.only = TRUE, quietly = TRUE,
-               warn.conflicts = FALSE)) {
-    install.packages(as.character(paquete), dependecies = TRUE,
-                     repos = "http://cran.us.r-project.org")
-    library(paquete, character.only = TRUE, quietly = TRUE,
-            warn.conflicts = FALSE)
-  }
-}
-    
-## *******   Defining required libraries to install and load   *******
-
-## Use this vector to indicate libraries to load.
-paquetes <- c("tidyverse", "lubridate", "glmnet", "fpp3", "bsts", "DiagrammeR")
-invisible(lapply(paquetes, instalar))
-
+source("../src/utils/utils.r", encoding = 'UTF-8')
 
 ```
 
@@ -46,7 +29,12 @@ Para utilizar las técnicas discutidas en esta sección se planterá el problema
 CLI: kaggle competitions download -c tabular-playground-series-sep-2022
 [Tabular Playground Series - Sep 2022](https://www.kaggle.com/competitions/tabular-playground-series-sep-2022)
 
-La estructura de la serie de tiempo cuenta con 3 niveles jerárquicos:
+Los datos son ficiticios y fueron creados como _dataset_ lúdico para incrementar las habilidades en los modelos de Aprendizaje de Máquina. No obstante, la estructura de diseño permite explotarlo aún más, en nuestro caso, para ejemplificar prediccines en modelos jerárquicos o agrupados. Es importante mencionar que se integraron efectos naturales de las series de tiempo como son días feriados, estacionalidad, tendencia, etc.
+
+Básicamente, consiste en la predicción del valor de las ventas durante el año 2021 para 2 tiendas que compiten entre sí y que están localizadas en 6 distintos países de Europa actualmente.
+
+
+Utilizaremos un diagrama de árbol para analizar la estructura de los datos, que consiste en series de tiempo con 3 niveles jerárquicos:
 
 - **6 países**: Belgium, France, Germany, Italy, Poland, Spain.
 - **2 tipos de tienda**: KaggleMart, KaggleRama.
@@ -79,6 +67,3 @@ head(sales_m)
 ```
 
 Con base en lo anterior, no se tiene que realizar pre-procesamiento alguno a nuestra información. Así mismo, nuestro objetivo es el poder realizar predicciones en series de tiempo jerárquicas en datos desagregados y no inferencia sobre las variables y sus relaciones, por lo que no será implementado un análisis EDA, si no que nos enfocaremos en conocer las cualidades de nuestra serie de tiempo para el tratamiento adecuado que debe considerarse en las componentes de una serie de tiempo (tendencia, ciclididad, estacionalidad, autocorrelación) previo a realizar las predicciones y aplicar las metodologías para lograr la consistencia al predecir en el modelo agregado.
-
-
-EN DESARROLLO EL EDA DE SERIES DE TIEMPO Y ALGUNOS HALLAZGOS 

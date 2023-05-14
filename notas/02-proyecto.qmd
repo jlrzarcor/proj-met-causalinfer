@@ -1,3 +1,12 @@
+```{r, echo=FALSE}
+
+#| code-fold: true
+#| warning: false
+
+source("../src/utils/utils.r", encoding = 'UTF-8')
+
+```
+
 # Aproximaciones por nivel
 
 En las series de tiempo (datos secuenciales) una de las características principales es su natural estructura compleja de *autocorrelación* que implica que las observaciones no son independientes. En general, presentan patrones de tendencia, ciclicidad o autocorrelación que requieren un entendimiento profundo para poder analizar correctamente la serie, ya sea para realizar descripción e inferencia acerca de su estructura o para generar predicciones acerca de valores futuros.
@@ -29,7 +38,9 @@ Esencialmente, estas series se organizan en una estructura por niveles, siendo e
 
 La siguiente figura nos permitira conceptualizar de forma intuitiva las estructuras jerárquicas y servirá como base para construir las ecuaciones y notación necesaria.
 
-```{r, fig.cap="Figure: Diagrama de árbol de una estructura jerárquica de 2 niveles"}
+![](figuras/diagram_hierarchical.png)
+
+```{r, fig.cap="Figure: Diagrama de árbol de una estructura jerárquica de 2 niveles", eval=FALSE, echo = FALSE}
 
 #| code-fold: true
 grViz("
@@ -65,7 +76,7 @@ digraph {
 ```
 
 
-Denotemos la $t$th observación por $y_{t}$ donde $t=1,...,T$. En el gráfico anteriro podemos osbervar que la estructura jerárquica nos muestra que el Total está desagregado en 2 series $A$ y $B$ en el nivel 1, que a su vez se desagregan en 3 y 2 series respectivamente en el nivel más bajo. Esto implica que tenemos 8 (1, 2, 5) series, con  5 en el último nivel de la jerarquía.
+Denotemos la $t$th observación por $y_{t}$ donde $t=1,...,T$. En el gráfico anterior podemos osbervar que la estructura jerárquica nos muestra que el Total está desagregado en 2 series $A$ y $B$ en el nivel 1, que a su vez se desagregan en 3 y 2 series respectivamente en el nivel más bajo. Esto implica que tenemos 8 (1, 2, 5) series, con  5 en el último nivel de la jerarquía.
 
 Para cualquier tiempo $t$, las observaciones en el último nivel inferior de la jerarquía deben sumar con las observaciones de las series superiores. Por tanto, podemos construir ecuaciones de agregación restricta (por llamarles de alguna forma):
 
@@ -126,14 +137,12 @@ n. El último nivel deberá ser presentado por una matriz identidad $I_m$.
 
 **Ejemplo. Kaggle Tabular Playground Series - Sep 2022**
 
+Como mencionamos en la sección 1, los datos corresponden a 6 países que a su vez poseen 2 tiendas (que compiten) y las cuales comercializan 4 productos de interés para los accionistas. El área de desarrollo comercial y presupuesto está interesada en conocer el valor de las ventas totales para 2021 en la región Europea; así mismo, desean conocer los ventas por producto para determinar el nivel de producción requerido por país garantizando que no exista desabasto ni sobreinventario; finalmente, es requerido analizar el la rentabilidad que se espera por tienda.
 
 
-
-
+Lo primero que haremos es construir nuestra base  
 
 ```{r}
-
-sales <- read_delim("../datos/sales.csv")
 sales_m <- sales |>
     mutate(t = (year(date)-year(min(date)))*12 + (month(date)-month(min(date)))) |>
     mutate(date = yearmonth(date)) |>
@@ -141,19 +150,189 @@ sales_m <- sales |>
     summarise(num_sold = sum(num_sold,na.rm = TRUE)) |>
     ungroup() |>
     as_tsibble(index = date,key = c(country,store,product))
+```
 
-install.packages()
-library(hts)
-sales_m_hts <- hts(sales_m, characters = c(3, 5))
-tourism.hts %>% aggts(levels=0:1) %>%
-  autoplot(facet=TRUE) +
-  xlab("Year") + ylab("millions") + ggtitle("Visitor nights")
 
+```{r}
+sales_m |>
+  aggregate_key(country / store /product, num_sold = sum(num_sold,na.rm=TRUE)/1000) |>
+  filter(is_aggregated(store)) |>
+  autoplot(num_sold) +
+  labs(x = "Mes/Año" , y = "Ventas (miles)",title = "Ventas totales y por país") +
+  facet_wrap(vars(country), scales = "free_y", ncol = 3) +
+  theme(legend.position = "none")
 
 ```
 
 
+
+```{r}
+
+sales_m |>
+  aggregate_key(country / store /product, num_sold = sum(num_sold,na.rm=TRUE)/1000) |>
+  filter(country == "Poland" | country == "Germany") |>
+  #filter(is_aggregated(store)) |>
+  autoplot(num_sold) +
+  labs(x = "Mes/Año" , y = "Ventas (miles)",title = "Ventas de Polonia por tienda/producto") +
+  facet_wrap(vars(country,store), scales = "free_y", ncol = 3) +
+  theme(legend.position = "none")
+
+```
+
+
+
+```{r}
+
+sales_m |>
+  aggregate_key(country / store /product, num_sold = sum(num_sold,na.rm=TRUE)/1000) |>
+  filter(is_aggregated(product),is_aggregated(store)) |>
+  select(-product,-store) |>
+  mutate(country = factor(country)) |>
+  gg_season(num_sold) +
+  facet_wrap(vars(country), nrow = 2, scales = "free_y")+
+  labs(x = "Mes",y = "Ventas (miles)")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Series de Tiempo Agrupadas
+
+En este caso, los datos no tienen una forma jerárquica de desagregarse naturalmente
+
+
+
+![](figuras/diagram_grouped.png)
+```{r, fig.cap="Figure: Diagrama de árbol de una estructura agrupada de 2 niveles", eval = FALSE, echo = FALSE}
+
+#| code-fold: true
+grViz("
+digraph {
+  graph [ranksep = 0.7, fontsize = 11]
+  node [shape = circle, style = filled, width = 1, fontcolor = blue, fontname = Helvetica, fontsize = 19]
+  node [color = green]
+    T1  [label = Total]
+    T2  [label = Total]
+  node [color = steelblue]
+    A  [label = A]
+    AX [label = AX]
+    AY [label = AY]
+  node [color = yellow]
+    B  [label = B]
+    BX [label = BX]
+    BY [label = BY]
+  node [color = steelblue]
+    X  [label = X]
+    AX2 [label = AX]
+    BX2 [label = BX]
+  node [color = yellow]
+    Y  [label = Y]
+    AY2 [label = AY]
+    BY2 [label = BY]
+  edge [minlen = 2, color = gray, arrowsize = 0]
+    T1 -> A
+    T1 -> B
+    T2 -> X
+    T2 -> Y
+    A -> AX
+    A -> AY
+    B -> BX
+    B -> BY
+    X -> AX2
+    X -> BX2
+    Y -> AY2
+    Y -> BY2
+
+    
+{ rank = same; A; B }
+{ rank = same; AX; AY; BX; BY; AX2; AY2; BX2; BY2}
+}
+", width = 600, height = 300
+)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Estructura Mixta Jerárquica y Agrupada
+
+Ahora bien, es posible que en algunos casos los factores de desagregación estén tanto anidados como cruzados (intersectados) al mismo tiempo, por lo que nuestra estructura es mixta, jerárquica y agrupada al mismo tiempo.
+
+Continuemos con nuestro caso de estudio de los datos de Ventas de productos en países europeos (Kaggle), los datos pueden desagregarse en los 4 productos sin necesidad de anidarse en cualquiera de las otras variables, país o tienda, esto es, podemos analizar nuestros datos o hacer predicciones por producto para toda la región europea con presencia comercial, pero también es posible realizar esto por cada país y por cada tienda. Se define esta estructura como **anidación** de geografía jerárquica **cruzada** o "intersectada" con el producto.
+
+Continuando con el uso del paquete de los autores `fpp3`, lo anterior se implementa combinando factores utilizando la función `aggregate_key()`.
+
+
+
+```{r}
+sales_m |>
+  aggregate_key((country / store) * product, num_sold = sum(num_sold,na.rm=TRUE)/1000) |>
+  filter(is_aggregated(country), is_aggregated(store), !is_aggregated(product)) |>
+  autoplot(num_sold) +
+  labs(x = "Mes/Año" , y = "Ventas (miles)",title = "Ventas totales por producto") +
+  facet_wrap(vars(product), scales = "free_y", ncol = 2) +
+  theme(legend.position = "none")
+```
+
+
+
+
+
+
+
+```{r}
+sales_m |>
+  aggregate_key((country / store) * product, num_sold = sum(num_sold,na.rm=TRUE)/1000) |>
+  filter(!is_aggregated(country), is_aggregated(store), !is_aggregated(product)) |>
+  autoplot(num_sold) +
+  labs(x = "Mes/Año" , y = "Ventas (miles)", title = "Ventas totales: por producto y país") +
+  facet_wrap(vars(country), scales = "free_y", ncol = 3) +
+  theme(legend.position = "none")
+```
+
+
+
+
 
 ## Enfoque ascendente (bottom-up)
 

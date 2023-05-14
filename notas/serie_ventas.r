@@ -1,14 +1,21 @@
-library(readr)
-library(lubridate)
-library(tidyverse)
-library(fabletools)
-library(zoo)
-library(ggplot2)
-library(tsibble)
-library(feasts)
-library(bsts)
+# CODE FOR PROJECT
 
-sales <- read_delim("/home/urielmtzsa/itam/semestre4/metodos_analiticos/proyecto/datos/sales.csv")
+#library(readr)
+#library(lubridate)
+#library(tidyverse)
+#library(fabletools)
+#library(zoo)
+#library(ggplot2)
+#library(tsibble)
+#library(feasts)
+#library(bsts)
+
+
+sales <- read_delim("../datos/sales.csv")
+
+
+# ======================= CREATE DATABASE
+
 sales_m <- sales |>
     mutate(t = (year(date)-year(min(date)))*12 + (month(date)-month(min(date)))) |>
     mutate(date = yearmonth(date)) |>
@@ -17,6 +24,7 @@ sales_m <- sales |>
     ungroup() |>
     as_tsibble(index = date,key = c(country,store,product))
 
+# ======================= BASIC GRAPHS
 
 sales_m |>
   aggregate_key(country / store /product, num_sold = sum(num_sold,na.rm=TRUE)/1000) |>
@@ -49,6 +57,10 @@ sales_m |>
 
 
 
+# ======================= START FORECASTING
+
+
+
 TS<-list()
 
 for(c in unique(sales_m$country)){
@@ -61,7 +73,7 @@ for(c in unique(sales_m$country)){
       esp_estado <- 
       AddLocalLinearTrend(list(), y) |> 
       AddSeasonal(y, nseasons = 12) 
-      ajuste <- bsts(y, state.specification = esp_estado,niter = 50000, seed = 230430)
+      ajuste <- bsts(y, state.specification = esp_estado,niter = 1000, seed = 230430)
       TS[[paste(c,s,p,sep = "_")]] <- ajuste
     }
   }
@@ -80,7 +92,7 @@ for(c in unique(sales_m$country)){
       esp_estado <- 
       AddLocalLinearTrend(list(), y) |> 
       AddSeasonal(y, nseasons = 12) 
-      ajuste <- bsts(y, state.specification = esp_estado,niter = 50000, seed = 230430)
+      ajuste <- bsts(y, state.specification = esp_estado,niter = 1000, seed = 230430)
       TS[[paste(c,s,sep = "_")]] <- ajuste
   }
 }
@@ -97,7 +109,7 @@ for(c in unique(sales_m$country)){
       esp_estado <- 
       AddLocalLinearTrend(list(), y) |> 
       AddSeasonal(y, nseasons = 12) 
-      ajuste <- bsts(y, state.specification = esp_estado,niter = 50000, seed = 230430)
+      ajuste <- bsts(y, state.specification = esp_estado,niter = 1000, seed = 230430)
       TS[[paste(c,sep = "_")]] <- ajuste
 }
 
@@ -108,11 +120,11 @@ y <-sales_m |>
 esp_estado <- 
   AddLocalLinearTrend(list(), y) |> 
   AddSeasonal(y, nseasons = 12) 
-ajuste <- bsts(y, state.specification = esp_estado,niter = 50000, seed = 230430)
+ajuste <- bsts(y, state.specification = esp_estado,niter = 1000, seed = 230430)
 TS[["total"]] <- ajuste
 
-saveRDS(TS, file = "/home/urielmtzsa/itam/semestre4/metodos_analiticos/proyecto/datos/TS.RDS") 
-TS<-readRDS(file = "/home/urielmtzsa/itam/semestre4/metodos_analiticos/proyecto/datos/TS.RDS") 
+saveRDS(TS, file = "../datos/TS.RDS") 
+TS<-readRDS(file = "../datos/TS.RDS") 
 
 
 
@@ -125,20 +137,21 @@ contribuciones_tbl <- map(1:tiempo, ~ ajuste$state.contributions[,,.x] |>
   group_by(t, comp) |> 
   summarise(media = mean(value), q5 = quantile(value, 0.05),
             q95 = quantile(value, 0.95), .groups = "drop")
-u<-serie1$state.specification
-u[1,1]
 
-head(contribuciones_tbl)
-plot(serie1, "state", burn = 2000)
+#u<-serie1$state.specification
+#u[1,1]
 
-
-u<-serie1$
-u[1,1]
+#head(contribuciones_tbl)
+#plot(serie1, "state", burn = 500)
 
 
+#u<-serie1$
+#u[1,1]
 
 
-y <- sales_m |> group_by()filter(country=="Poland",product=="Kaggle Advanced Techniques",store=="KaggleMart") |> select(num_sold) |> as.ts()
+
+
+y <- sales_m |> filter(country=="Poland",product=="Kaggle Advanced Techniques",store=="KaggleMart") |> select(num_sold) |> as.ts()
 esp_estado <- 
   AddLocalLinearTrend(list(), y) |> 
   AddSeasonal(y, nseasons = 12) 
@@ -173,22 +186,107 @@ ggplot(contribuciones_tbl,
 
 
 mod_spec_1 <- AddLocalLevel(list(), y )
+
 mod_spec_2 <- AddLocalLinearTrend(list(), y)
+
 mod_spec_3 <- AddLocalLevel(list(), y) |> 
   AddSeasonal(nseasons = 12, y)
+
 mod_spec_4 <- AddLocalLinearTrend(list(), y) |> 
   AddSeasonal(nseasons = 12, y) 
+
 mod_spec_5 <- AddSemilocalLinearTrend(list(), y) |> 
   AddSeasonal(nseasons = 12, y) 
+
 mod_spec_6 <- AddSemilocalLinearTrend(list(), y) |> 
   AddSeasonal(nseasons = 12, y) |> 
   AddAr(lags = 2, y)
+
 specs <- list(mod_spec_1, mod_spec_2, mod_spec_3, mod_spec_4, mod_spec_5, mod_spec_6)
+
 ajustes <- map(specs, function(spec){
-  bsts(y, spec, niter = 50000, ping = 10000)
+  bsts(y, spec, niter = 1000, ping = 10000)
 })
 
 
 
-CompareBstsModels(ajustes, burn = 20000)
+CompareBstsModels(ajustes, burn = 500)
+
+
+grViz("
+digraph {
+  graph [ranksep = 0.7, fontsize = 11]
+  node [shape = circle, style = filled, width = 1, fontcolor = blue, fontname = Helvetica, fontsize = 19]
+  node [color = green]
+    y  [label = Total]
+  node [color = steelblue]
+    A  [label = A]
+    AA [label = AA]
+    AB [label = AB]
+    AC [label = AC]
+  node [color = yellow]
+    B  [label = B]
+    BA [label = BA]
+    BB [label = BC]
+  edge [minlen = 2, color = gray, arrowsize = 0]
+    y -> A
+    y -> B
+    A -> AA
+    A -> AB
+    A -> AC
+    B -> BA
+    B -> BB
+    
+{ rank = same; A; B }
+{ rank = same; AA; AB; AC; BA; BB }
+}
+", width = 600, height = 300
+)
+
+
+
+
+grViz("
+digraph {
+  graph [ranksep = 0.7, fontsize = 11]
+  node [shape = circle, style = filled, width = 1, fontcolor = blue, fontname = Helvetica, fontsize = 19]
+  node [color = green]
+    T1  [label = Total]
+    T2  [label = Total]
+  node [color = steelblue]
+    A  [label = A]
+    AX [label = AX]
+    AY [label = AY]
+  node [color = yellow]
+    B  [label = B]
+    BX [label = BX]
+    BY [label = BY]
+  node [color = steelblue]
+    X  [label = X]
+    AX2 [label = AX]
+    BX2 [label = BX]
+  node [color = yellow]
+    Y  [label = Y]
+    AY2 [label = AY]
+    BY2 [label = BY]
+  edge [minlen = 2, color = gray, arrowsize = 0]
+    T1 -> A
+    T1 -> B
+    T2 -> X
+    T2 -> Y
+    A -> AX
+    A -> AY
+    B -> BX
+    B -> BY
+    X -> AX2
+    X -> BX2
+    Y -> AY2
+    Y -> BY2
+
+    
+{ rank = same; A; B }
+{ rank = same; AX; AY; BX; BY; AX2; AY2; BX2; BY2}
+}
+", width = 600, height = 300
+)
 

@@ -41,11 +41,7 @@ Un aspecto relevante para los tomadores de decisión es el hecho de poder tener 
 
 Seleccionamos una base de datos simple de las librerias de Kaggle de datos artificiales que usaremos para poder ejemplificar los temas a revisar.
 
-
 ### DATABASE
-
-
-
 
 ```{r}
 
@@ -55,7 +51,6 @@ data <- read.csv('data_kaggle/train.csv', header = T) |>
 summary(data)
 
 ```
-
 
 # Data Cleaning Process
 
@@ -90,11 +85,6 @@ data_play_by_product <- data_play|>
 
 ```
 
-
-
-
-
-
 ```{r}
 #| fig-width: 4
 #| fig-height: 3
@@ -119,11 +109,4 @@ autoplot(datats, total , alpha = 0.8)
 
 ### COMPORTAMIENTO DE LA SERIE DE TIEMPO
 
-Integrar una especia de EDA pero de serie de tiempo, esto es,
-analizar tendenci, ciclicidad etc.
-
-
-
-
-
-
+Integrar una especia de EDA pero de serie de tiempo, esto es, analizar tendenci, ciclicidad etc.
