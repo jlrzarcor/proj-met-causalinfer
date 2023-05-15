@@ -9,7 +9,7 @@ source("../src/utils/utils.r", encoding = 'UTF-8')
 
 ```
 
-**Introducción**
+## Introducción
 
 Un aspecto relevante para los tomadores de decisión es el hecho de poder tener información confiable y consistente, de tal forma que las proyecciones o valores resultantes sean razonables. Cuando se realizan proyecciones en series de tiempo, nos enfrentamos a un cojunto de elementos que debemos atacar de forma secuencial y sencillla para poder derterminar los patrones naturales que emergen de la serie, tales como tendencia, ciclicidad, estacionalidad en diversas fases. En adición, cuando observamos datos desagregados por diversas categorías anidados dentro de categorías o incluso por agrupación de categorías, nos enfrentamos a series de tiempo Jerárquicas o Jerárquicas Agrupadas.
 

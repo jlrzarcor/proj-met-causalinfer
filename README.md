@@ -7,13 +7,13 @@
 
 ---
   
-# Proyecto final: MÉTODOS DE PREDICCIÓN EN SERIES DE TIEMPO USANDO DATOS JERÁRQUICOS QUE SEAN CONSISTENTES EN LA ESTRUCTURA AGREGADA.
+# Proyecto final: INVESTIGACIÓN SOBRE MÉTODOS DE PREDICCIÓN CONSISTENTES EN LA ESTRUCTURA AGREGADA PARA SERIES DE TIEMPO CON DATOS DESAGREGADOS EN ESTRUCTURAS JERÁRQUICAS.
 
 **Integrantes del equipo**  
 
 | Nombre                          |     CU   | Mail                    | Usuario Gh                                    |
 | :-----------------------------: | :------: | :---------------------: | :-------------------------------------------: |
-| Uriel Martinez Sáncehz          | XXXXXX   |                         |                                               |
+| Uriel Martinez Sáncehz          | XXXXXX   | umartin5@itam.mx        | [urielmtzsa](https://github.com/urielmtzsa)   |
 | José Luis Roberto Zárate Cortés | XXXXXX   | jzaratec@itam.mx        | [jlrzarcor](https://github.com/jlrzarcor)     |
 
 ## Objetivo
@@ -38,15 +38,14 @@ agregados, tanto en las estimaciones agregadas como desagregadas.
 ```
 ├── README.md            <- Documento de referencia para navegar el repositorio del proyecto
 │
-├── data_kaggle          <- Bases de datos utilizada para realizar el proyecto
+├── datos                <- Bases de datos utilizada para realizar el proyecto
 │
-├── notebooks            <- Notebooks de R utilizados en la ejecución del proyecto
+├── notas                <- Notebooks en quarto para creación de _Bookdown_
 │
-├─   ─ BD_reporte.Rmd       <- Reporte de la descripción y utilización de las fuentes de bases de datos
+├── BD_reporte.Rmd       <- Reporte de la descripción y utilización de las fuentes de bases de datos
 |   ├── Intro.Rmd        <- <- Documento de introducción del proyecto
 |   ├── ModProyFinal.Rmd <- Notebook de R con el procedimiento y códgio de implementación de los modelos
 |   ├── ModProyFinal.html<- Reporte entrega proyecto.
-|   ├─Verificando_datos.ipynb <- Notebook de Jupyter con el procedimiento de manipulación de las bases de datos
 |   └── ajuste_param. <- <- Notebook de ejemplo en R con un procedimiento ajuste de parámes
 │
 ├── images             <- Imágenes utilizadas en el repositorio

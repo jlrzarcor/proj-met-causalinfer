@@ -1,5 +1,5 @@
 
-# Tipos de estructuras que surgen en datos desagregados
+# Enfoque tradicional de predicciones a un nivel de agregación
 
 ```{r, echo=FALSE, include = FALSE}
 
@@ -10,6 +10,8 @@ source("../src/utils/utils.r", encoding = 'UTF-8')
 
 ```
 
+
+Las predicciones de series de tiempo (jerárquicas o agrupadas) se  realizan a un nivel de agregación, para después ser agregadas para niveles superiores o desagregadas para niveles inferiores con el objetivo de obtener un conjunto de predicciones coherentes con el resto de la estructura.
 
 
 ## Enfoque ascendente (bottom-up)
@@ -40,3 +42,15 @@ Bajo este enfoque, el método consiste en generar las predicciones para el Total
 
 
 ## Enfoque *middle-out*
+
+Este método combina los enfoques _bottom-up_ y _top-down_ y se utiliza estrictamente para estructuras de agregación jerárquica.
+
+1. Elegir un nivel intermedio para el cual se realizan las predicciones de todas las series en este nivel
+2. Para las series superiores, se generan predicciones coherentes utilizando el enfoque _bottom-up_ agregando las predicciones del nivel medio hacia "arriba". 
+3. Para las series inferiores, se generan predicciones coherentes utilizando el enfoque _top-down_ agregando las predicciones del nivel medio hacia "abajo".
+
+Implementación:
+* función `middle_out()`
+* Especificar el nivel medio con el argumento `level`
+* Seleccionar el enfoque _top-down_ con el argumento `method`
+

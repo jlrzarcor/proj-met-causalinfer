@@ -2,7 +2,7 @@ project:
   type: book
 
 book:
-  title: "PREDICCIONES EN SERIES DE TIEMPO JERÁRQUICAS O AGRUPADAS"
+  title: "INVESTIGACIÓN SOBRE MÉTODOS DE PREDICCIÓN EN SERIES DE TIEMPO JERÁRQUICAS O AGRUPADAS"
   subtitle: "Métodos analíticos | Proyecto final"
   author: 
     - "José Luis Roberto Zárate Cortés"
@@ -12,6 +12,8 @@ book:
     - 01-proyecto.qmd
     - 02-proyecto.qmd
     - 03-proyecto.qmd
+    - 04-proyecto.qmd
+    - 05-proyecto.qmd
     - 99-referencias.qmd
 bibliography: referencias/book.bib
 format:
