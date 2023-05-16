@@ -13,7 +13,7 @@
 
 | Nombre                          |     CU   | Mail                    | Usuario Gh                                    |
 | :-----------------------------: | :------: | :---------------------: | :-------------------------------------------: |
-| Uriel Martinez Sáncehz          | XXXXXX   | umartin5@itam.mx        | [urielmtzsa](https://github.com/urielmtzsa)   |
+| Uriel Martinez Sáncehz          | 202942   | umartin5@itam.mx        | [urielmtzsa](https://github.com/urielmtzsa)   |
 | José Luis Roberto Zárate Cortés | XXXXXX   | jzaratec@itam.mx        | [jlrzarcor](https://github.com/jlrzarcor)     |
 
 ## Objetivo

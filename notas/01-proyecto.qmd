@@ -11,9 +11,9 @@ source("../src/utils/utils.r", encoding = 'UTF-8')
 
 ## Introducción
 
-Un aspecto relevante para los tomadores de decisión es el hecho de poder tener información confiable y consistente, de tal forma que las proyecciones o valores resultantes sean razonables. Cuando se realizan proyecciones en series de tiempo, nos enfrentamos a un cojunto de elementos que debemos atacar de forma secuencial y sencillla para poder derterminar los patrones naturales que emergen de la serie, tales como tendencia, ciclicidad, estacionalidad en diversas fases. En adición, cuando observamos datos desagregados por diversas categorías anidados dentro de categorías o incluso por agrupación de categorías, nos enfrentamos a series de tiempo Jerárquicas o Jerárquicas Agrupadas.
+Un aspecto relevante para los tomadores de decisión es el hecho de poder tener información confiable y consistente, de tal forma que las proyecciones o valores resultantes sean razonables. Cuando se realizan proyecciones en series de tiempo, nos enfrentamos a un cojunto de elementos que debemos atacar de forma secuencial y sencillla para poder derterminar los patrones naturales que emergen de la serie, tales como tendencia, ciclicidad y estacionalidad en diversas fases. En adición, cuando observamos datos desagregados por diversas categorías anidados dentro de categorías o incluso por agrupación de categorías, nos enfrentamos a series de tiempo Jerárquicas o Jerárquicas Agrupadas.
 
-Hemos seleccionamos una base de datos simple de las librerias de Kaggle (datos artificiales) que usaremos para poder ejemplificar los temas a desarrollar.
+Hemos seleccionado una base de datos simple de las librerías de Kaggle (datos artificiales) que usaremos para poder ejemplificar los temas a desarrollar.
 
 ## Objetivo
 
@@ -45,10 +45,10 @@ Utilizaremos un diagrama de árbol para analizar la estructura de los datos, que
 En el siguiente resumen podemos observar las características principales de nuestra información. Al ser un base de datos artificial, no encontramos problemas como desbalanceo o valores faltantes. Como se mencionó anteriormente, tenemos 6 países, 2 categorías para tienda y 4 tipos de producto distintos.
 
 ```{r, echo=FALSE}
-data <- read.csv('../data_kaggle/train.csv', header = T) |>
-  mutate(across(all_of(3:5), ~ as_factor(.x)))
+#data <- read.csv('../data_kaggle/train.csv', header = T) |>
+#  mutate(across(all_of(3:5), ~ as_factor(.x)))
 
-summary(data)
+#summary(data)
 
 ```
 
@@ -61,9 +61,9 @@ sales_m <- sales |>
     mutate(t = (year(date)-year(min(date)))*12 + (month(date)-month(min(date)))) |>
     mutate(date = year(date)*100+month(date)) |>
     group_by(date,t,country,store,product) |>
-    summarise(num_sold = sum(num_sold,na.rm = TRUE))
+    summarise(num_sold = sum(num_sold,na.rm = TRUE)) 
 
-head(sales_m)
+head(sales_m) |> kable()
 ```
 
 Con base en lo anterior, no se tiene que realizar pre-procesamiento alguno a nuestra información. Así mismo, nuestro objetivo es el poder realizar predicciones en series de tiempo jerárquicas en datos desagregados y no inferencia sobre las variables y sus relaciones, por lo que no será implementado un análisis EDA, si no que nos enfocaremos en conocer las cualidades de nuestra serie de tiempo para el tratamiento adecuado que debe considerarse en las componentes de una serie de tiempo (tendencia, ciclididad, estacionalidad, autocorrelación) previo a realizar las predicciones y aplicar las metodologías para lograr la consistencia al predecir en el modelo agregado.

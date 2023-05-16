@@ -16,7 +16,7 @@ instalar <- function(paquete) {
 ## *******   Defining required libraries to install and load   *******
 
 ## Use this vector to indicate libraries to load.
-paquetes <- c("tidyverse", "lubridate", "glmnet", "fpp3", "bsts", "DiagrammeR", "hts")
+paquetes <- c("tidyverse", "lubridate", "glmnet", "fpp3", "bsts", "DiagrammeR", "hts","knitr")
 invisible(lapply(paquetes, instalar))
 
 sales <- read_delim("../datos/sales.csv")

@@ -18,7 +18,7 @@ Los modelos de espacio de estados (bayesianos dinámicos) nos permite modelar la
 -   Una forma estándar de producir pronósticos puntuales, en intervalos, o por distribuciones.
 -   Una forma estándar de permitir que el modelo se adapte en el tiempo a cambios estructurales (por ejemplo, cambios de patrones de estacionalidad, efectos diferentes de covariables, etc.)
 
-Por otro lado, regularmente las series de tiempo pueden estar desagregadas por diversos atributos específicos de interés para el investigador. Tales atributos podrían desagregarse a su vez en categrorías o subcategorías más detalladas, esto es, categorías anidadas en categorías de grupos de mayor tamaño, por lo que a esta estructura de agregación jerárquica en las series de tiempo le llamamos naturalmente **"Series de Tiempo Jerárquicas"**, que usualmente resultan a causa de las divisiones geográficas.
+Por otro lado, regularmente las series de tiempo pueden estar desagregadas por diversos atributos específicos de interés para el investigador. Tales atributos podrían desagregarse a su vez en categorías o subcategorías más detalladas, esto es, categorías anidadas en categorías de grupos de mayor tamaño, por lo que a esta estructura de agregación jerárquica en las series de tiempo le llamamos naturalmente **"Series de Tiempo Jerárquicas"**, que usualmente resultan a causa de las divisiones geográficas.
 
 Una estructura de agregación más compleja aún surge cuando podemos utilizar dos categorías jerárquicas juntas, e.g. jerarquías por producto y por región geográfica. En este caso se le conoce como **"Series de Tiempo Agrupadas"**
 
@@ -173,7 +173,7 @@ sales_m <- sales |>
     ungroup() |>
     as_tsibble(index = date,key = c(country,store,product))
 
-head(sales_m,2)
+head(sales_m,2) |> kable()
 ```
 
 La función `aggregate_key()` se utiliza para crear series de tiempo jerárquicas; para especificar si corresponde a una estructura anidada utilizamos la notación `parent/child`. Esto genera filas adicionales a nuestro `tsibble` que corresponden a las observaciones de agregación generados para cada periodo.
@@ -200,7 +200,7 @@ A gran escala, todos los países tuvieron un incremento considerable en las vent
 
 Otro elemento adicional, es que podemos observar dos patrones muy bien definidos del comportamiento de las ventas que surgen en lo que podríamos considerar 2 regiones: 1. Región norte de Europa: France, Belgium y Germany. Una caída severa de sus niveles de ventas durante el primer trimestre de 2020 (niveles cercanos 0) con una recuperación durante los siguientes trimestres casi a niveles previos a la caída del primer trimestre. 2. Región sur de Europa: Poland, Italy y Spain. Un cambio abrupto en el nivel de ventas a partir de 2020, en particular Poland con un incremento del 250% y un incremento de aproximadamente un 40% para Italy y Spain. El impacto por la caída en en el primer trimestre fue moderado para los tres países.
 
-A nivel Nacional, obsercamos que el patrón de tendencia se rige en su mayoría por el comportamiento de la región sur, en particular en el fuete incremento que se experimentó en 2020.
+A nivel Nacional, observamos que el patrón de tendencia se rige en su mayoría por el comportamiento de la región sur, en particular en el fuete incremento que se experimentó en 2020.
 
 ```{r}
 sales_m |>
@@ -214,7 +214,7 @@ sales_m |>
 
 El comporatmiento entre ambas tiendas es prácticamente el mismo pero a escalas diferentes, por lo que el agregado de Europa guarda este mismo patrón.
 
-Como era de esperarse, en comparación con lo observado por país, observamos los mismos elementos en las tres series: 1. Incremento significativo en el nivel de ventas para 2018 y 2019 en comparación con 2017 2. Tendencia decreciente de 2018 a 2019 3. Máximo histórico observado a finales de 2019 con una abrupta caída en el primer trimestre de 2020 y una tendencia de recuperación durante los siguientes trimestres para superar nuevamente el nivel de ventas histórico para el cierre del año 2020.
+Como era de esperarse, en comparación con lo observado por país, observamos los mismos elementos en las tres series: 1. Incremento significativo en el nivel de ventas para 2018 y 2019 en comparación con 2017; 2. Tendencia decreciente de 2018 a 2019; 3. Máximo histórico observado a finales de 2019 con una abrupta caída en el primer trimestre de 2020 y una tendencia de recuperación durante los siguientes trimestres para superar nuevamente el nivel de ventas histórico para el cierre del año 2020.
 
 ```{r}
 sales_m |>
@@ -249,7 +249,7 @@ De forma consistente con el análisis de tendencia, los patrones de comportamien
 
 Aspectos que resaltan claramente con respecto al año 2020 y debemos tener presente son:
 
--   El comportamiento de la región norte en ausencia del 2020, tiene sus niveles de venta más altos tanto en los días al rededor del principio y fin de año así como durante el segundo trimestre (abril-junio). Visualmente podríamos establecer que sus valores promedio mensuales estarían en el rango entre 50 y 60.
+-   El comportamiento de la región norte en ausencia del 2020, tiene sus niveles de venta más altos tanto en los días alrededor del principio y fin de año así como durante el segundo trimestre (abril-junio). Visualmente podríamos establecer que sus valores promedio mensuales estarían en el rango entre 50 y 60.
 -   Para la región sur (Italy, Poland, Spain), también en asuencia de 2020 el patrón de comportamiento estacional es muy similar a la región norte pero con la diferencia de ser más bajo, con valores medios mernsuales entre 20 y 40.
 -   Finalmente, el 2020 muestra un cambio fuerte en los niveles de venta de la región sur, casi similar al observado en la región norte.
 
@@ -272,7 +272,7 @@ Es necesario indicar que no se tiene información suficiente para poder determin
 
 ## Series de Tiempo Agrupadas
 
-En este caso, los datos no tienen una forma jerárquica de desagregarse naturalmente. Siguiente figura es un ejemplo simple para una estructura agrupada.
+En este caso, los datos no tienen una forma jerárquica de desagregarse naturalmente. La siguiente figura es un ejemplo simple para una estructura agrupada.
 
 ![](figuras/diagram_grouped.png)
 
@@ -398,7 +398,6 @@ $$
   \tag{2.2.4}
   \boldsymbol{y}_t=\boldsymbol{S}\boldsymbol{b}_{t},
 \end{align}
-  
 $$
 
 donde:
