@@ -13,15 +13,54 @@ source("../src/utils/utils.r", encoding = 'UTF-8')
 
 Las predicciones de series de tiempo (jerárquicas o agrupadas) se  realizan a un nivel de agregación, para después ser agregadas para niveles superiores o desagregadas para niveles inferiores con el objetivo de obtener un conjunto de predicciones coherentes con el resto de la estructura.
 
+**_Workflow_ para predicciones en estructuras agregadas**
+
+El autor sugiere un _pipeline_ de funciones utiizando la pquetería `fpp3`
+
+`data |> aggregate_key() |> model() |> reconcile() |> forecast()`
+
+1. Crear o convertir la tabla de datos que contiene las series con los datos del último nivel inferior en un objeto `tsibble`.
+2. Definir la estructrua de agregación por medio de la función `aggregate_key` y construir un objeto `tsibble` que también contenga las series agregadas.
+3. Identificar un modelo de predicción para cada serie en todos los niveles de agreagcaión.
+4. Especificar con la función `reconcile()` cómo se debe generar una predicción coherente a partir de los modelos elegidos
+5. Utilizar la función `forecast()` para generar las predicciones para toda la estructura de agregación.
+
 
 ## Enfoque ascendente (bottom-up)
 
+1. Generamos las predicciones para cada serie en el último nivel inferior (fondo - _bottom_)
+2. Adicionamos para generar las predicciones de todas las series en la estructura.
+
+Consideremos nuevamente el diagrama ejemplo para series de tiempo jerárquicas (ver XXX), generamos predicciones para $h$ periodos adelante para cada una de las series en el último nivel inferior, esto es $\hat{y}_{T+h|T}$:
 
 
+$$
+\begin{align}
+ \tag{3.1.1}
+ \hat{y}_{\text{AA},h}, \quad \hat{y}_{\text{AB},h}, \quad\hat{y}_{\text{AC},h}, \quad\hat{y}_{\text{BA},h},   \quad \text{y} \quad \hat{y}_{\text{BB},h}, \quad
+\end{align}
+$$
+Adicionando, obtenemos predicciones coherentes para $h$ periodos adelante para el resto de las series:
+
+$$
+\begin{align}
+ \tag{3.1.2}
+ 
+ \tilde{y}_{h}=\hat{y}_{\text{AA},h}+\hat{y}_{\text{AB},h}+\hat{y}_{\text{AC},h}+\hat{y}_{\text{BA},h}  \\
+ \tilde{y}_{\text{A},h}=\hat{y}_{\text{AA},h}+\hat{y}_{\text{AB},h}+\hat{y}_{\text{AC},h}, \\
+ \text{y} \quad \tilde{y}_{\text{B},h}=\hat{y}_{\text{BA},h}+\hat{y}_{\text{BB},h}
+ 
+\end{align}
+$$
+
+Se utiliza la notación tilde "~" para indicar predicción coherente.
 
 
+::: callout-note
+- Ventaja:las predicciones se realizan en el último nivel inferior lo que implica que no exista pérdida de información debida a la agragación.
 
-
+- Desventaja: este nivel puede ser altamente ruidoso y dificultar el modelado y predicciones. Pensemos por ejemplo en los modelos de COVID donde la información de algunos países es altamente ruidosa debido al tamaño bajo de sus poblaciones que implica muestras bajas y mayor variabilidad en el agregado.
+:::
 
 ## Enfoque descendente (top-down)
 
