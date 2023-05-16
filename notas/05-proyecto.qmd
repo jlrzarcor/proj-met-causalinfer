@@ -11,6 +11,194 @@ source("../src/utils/utils.r", encoding = 'UTF-8')
 ```
 
 
+```{r, echo=FALSE, include = FALSE}
+TS<-readRDS(file = "../datos/TS.RDS") 
+TSp<-readRDS(file = "../datos/TSp.RDS") 
+```
+
+```{r}
+ajuste <- TS[["total"]]
+plot(ajuste, "state", burn = 2000)
+```
+
+```{r}
+dims <- ajuste$state.contributions |> dim()
+tiempo <- dims[3]
+contribuciones_tbl <- map(1:tiempo, ~ ajuste$state.contributions[,,.x] |> 
+  as_tibble() |> mutate(t = .x)) |> bind_rows() |> 
+  pivot_longer(trend:seasonal.12.1, values_to = "value", names_to = "comp") |> 
+  group_by(t, comp) |> 
+  summarise(media = mean(value), q5 = quantile(value, 0.05),
+            q95 = quantile(value, 0.95), .groups = "drop")
+
+ggplot(contribuciones_tbl, 
+  aes(x = t, y = media, ymin = q5, ymax = q95)) +
+  geom_ribbon(alpha = 0.1) + 
+  geom_line(alpha = 1) + facet_wrap(~ comp, scales = "free_y", ncol = 1)
+```
+
+```{r}
+#| warning: false
+pred_errors_tbl <- 
+  ajuste$one.step.prediction.errors |> 
+  t() |> as_tibble() |>
+  mutate(t = 1: tiempo) |> 
+  pivot_longer(-c(t), names_to = "sim", values_to = "valor") |> 
+  group_by(t) |> 
+  summarise(valor = mean(valor)) |> 
+  as_tsibble(index = t)
+
+ACF(pred_errors_tbl) |> 
+  autoplot() + ylim(c(-1,1))
+```
+
+```{r}
+error <- ajuste$one.step.prediction.errors |> apply(2, mean)
+qqnorm(error)
+qqline(error)
+```
+
+
+```{r}
+pred <- predict(ajuste, horizon = 24,burn=2000)
+plot(pred)
+```
+
+
+
+```{r}
+#| code-fold: true
+
+ajuste <- TS[["total"]]
+dims <- ajuste$state.contributions |> dim()
+tiempo <- dims[3]
+contribuciones_total <- map(1:tiempo, ~ ajuste$state.contributions[,,.x] |> 
+  as_tibble() |> mutate(t = .x)) |> bind_rows() |> 
+  pivot_longer(trend:seasonal.12.1, values_to = "value", names_to = "comp") |> 
+  group_by(t, comp) |> 
+  summarise(media = mean(value), q5 = quantile(value, 0.05),
+            q95 = quantile(value, 0.95), .groups = "drop") |>
+  group_by(t) |>
+  summarise(media_total = sum(media))
+pred <- predict(ajuste, horizon = 24,burn=2000)$mean
+contribuciones_total<-rbind(contribuciones_total,tibble(t = 49:72, media_total = pred))
+
+
+i<-0
+for(c in unique(sales_m$country)){
+  for(s in unique(sales$store)){
+    for(p in unique(sales$product)){
+      ajuste <- TS[[paste(c,s,p,sep = "_")]]
+      dims <- ajuste$state.contributions |> dim()
+      tiempo <- dims[3]
+      contribuciones_tbl <- map(1:tiempo, ~ ajuste$state.contributions[,,.x] |> 
+        as_tibble() |> mutate(t = .x)) |> bind_rows() |> 
+        pivot_longer(trend:seasonal.12.1, values_to = "value", names_to = "comp") |> 
+        group_by(t, comp) |> 
+        summarise(media = mean(value), q5 = quantile(value, 0.05),
+                  q95 = quantile(value, 0.95), .groups = "drop") |>
+        group_by(t) |>
+        summarise(media_producto = sum(media)) |>
+        mutate(p = paste(c,s,p,sep = "_"))
+        pred <- predict(ajuste, horizon = 24,burn=2000)$mean
+        contribuciones_tbl<-rbind(contribuciones_tbl,tibble(t = 49:72, media_producto = pred,p = paste(c,s,p,sep = "_")))
+        if(i==0){contribuciones_producto<-contribuciones_tbl}else{contribuciones_producto<-rbind(contribuciones_producto,contribuciones_tbl)}
+        i<-i+1
+    }
+  }
+}
+contribuciones_producto<-contribuciones_producto |>
+  group_by(t) |>
+  summarise(media_producto = sum(media_producto)) 
+
+
+i<-0
+for(c in unique(sales_m$country)){
+  for(s in unique(sales$store)){
+    ajuste <- TS[[paste(c,s,sep = "_")]]
+    dims <- ajuste$state.contributions |> dim()
+    tiempo <- dims[3]
+    contribuciones_tbl <- map(1:tiempo, ~ ajuste$state.contributions[,,.x] |> 
+      as_tibble() |> mutate(t = .x)) |> bind_rows() |> 
+      pivot_longer(trend:seasonal.12.1, values_to = "value", names_to = "comp") |> 
+      group_by(t, comp) |> 
+      summarise(media = mean(value), q5 = quantile(value, 0.05),
+                q95 = quantile(value, 0.95), .groups = "drop") |>
+      group_by(t) |>
+      summarise(media_store = sum(media)) |>
+      mutate(p = paste(c,s,sep = "_"))
+      pred <- predict(ajuste, horizon = 24,burn=2000)$mean
+      contribuciones_tbl<-rbind(contribuciones_tbl,tibble(t = 49:72, media_store = pred,p = paste(c,s,sep = "_")))
+      if(i==0){contribuciones_store<-contribuciones_tbl}else{contribuciones_store<-rbind(contribuciones_store,contribuciones_tbl)}
+      i<-i+1
+  }
+}
+contribuciones_store<-contribuciones_store |>
+  group_by(t) |>
+  summarise(media_store = sum(media_store)) 
+
+
+i<-0
+for(c in unique(sales_m$country)){
+  ajuste <- TS[[paste(c,sep = "_")]]
+  dims <- ajuste$state.contributions |> dim()
+  tiempo <- dims[3]
+  contribuciones_tbl <- map(1:tiempo, ~ ajuste$state.contributions[,,.x] |> 
+    as_tibble() |> mutate(t = .x)) |> bind_rows() |> 
+    pivot_longer(trend:seasonal.12.1, values_to = "value", names_to = "comp") |> 
+    group_by(t, comp) |> 
+    summarise(media = mean(value), q5 = quantile(value, 0.05),
+              q95 = quantile(value, 0.95), .groups = "drop") |>
+    group_by(t) |>
+    summarise(media_country = sum(media)) |>
+    mutate(p = paste(c,sep = "_"))
+    pred <- predict(ajuste, horizon = 24,burn=2000)$mean
+    contribuciones_tbl<-rbind(contribuciones_tbl,tibble(t = 49:72, media_country = pred,p = paste(c,sep = "_")))
+    if(i==0){contribuciones_country<-contribuciones_tbl}else{contribuciones_country<-rbind(contribuciones_country,contribuciones_tbl)}
+    i<-i+1
+}
+contribuciones_country<-contribuciones_country |>
+  group_by(t) |>
+  summarise(media_country = sum(media_country)) 
+
+
+contribuciones_tbl<-cbind(
+  contribuciones_total,
+  contribuciones_producto|>select(media_producto),
+  contribuciones_store |>select(media_store),
+  contribuciones_country |>select(media_country)
+) |>
+  mutate(
+    diff_total_producto = media_total - media_producto,
+    diff_total_store = media_total - media_store,
+    diff_total_country = media_total - media_country
+  )
+```
+
+```{r}
+
+ggplot(contribuciones_tbl)+ 
+  geom_line(aes(x = t, y = diff_total_producto/1000,colour = "Total - Producto")) +
+  geom_line(aes(x = t, y = diff_total_store/1000,colour = "Total - Store")) +
+  geom_line(aes(x = t, y = diff_total_country/1000,colour = "Total - Country")) +
+  labs(x = "t", y = "sales (miles)") +
+  scale_color_manual(name = "Diferencias", values = c(
+    "Total - Producto" = "darkblue","Total - Store" = "#218611","Total - Country" ="#77091b")) +
+  geom_hline(yintercept = 0, linetype="dotted", color = "black", size=1.5) +
+  geom_vline(xintercept = 48, linetype="dotted", color = "black", size=1.5)
+
+```
+
+```{r}
+
+ggplot(contribuciones_tbl)+ 
+  geom_line(aes(x = t, y = media_total/1000,colour = "Total") ) +
+  geom_line(aes(x = t, y = media_producto/1000, colour = "Producto"),linetype = "dashed",size = 1) +
+  labs(x = "t", y = "sales (miles)") +
+  scale_color_manual(name = "Serie Jerárquica", values = c("Total" = "red", "Producto" = "darkblue")) + 
+  geom_vline(xintercept = 48, linetype="dotted", color = "black", size=1.5)
+
+```
 
 ## Datos Jerárquicos.
 

@@ -1,18 +1,18 @@
 # CODE FOR PROJECT
 
-#library(readr)
-#library(lubridate)
-#library(tidyverse)
-#library(fabletools)
+library(readr)
+library(lubridate)
+library(tidyverse)
+library(fabletools)
 #library(zoo)
 #library(ggplot2)
-#library(tsibble)
-#library(feasts)
-#library(bsts)
+library(tsibble)
+library(feasts)
+library(bsts)
 
 
 sales <- read_delim("../datos/sales.csv")
-
+#sales<-read_delim("/home/urielmtzsa/itam/semestre4/metodos_analiticos/proyecto/datos/sales.csv") 
 
 # ======================= CREATE DATABASE
 
@@ -40,7 +40,7 @@ sales_m |>
   filter(country == "Poland" | country == "Germany") |>
   #filter(is_aggregated(store)) |>
   autoplot(num_sold) +
-  labs(x = "Mes/Año" , y = "Ventas (miles)",title = "Ventas de Polonia por tienda/producto") +
+  labs(x = "Mes/Año" , y = "Ventas (miles)",title = "Ventas de Polonia/Alemania por tienda/producto") +
   facet_wrap(vars(country,store), scales = "free_y", ncol = 3) +
   theme(legend.position = "none")
 
@@ -73,7 +73,7 @@ for(c in unique(sales_m$country)){
       esp_estado <- 
       AddLocalLinearTrend(list(), y) |> 
       AddSeasonal(y, nseasons = 12) 
-      ajuste <- bsts(y, state.specification = esp_estado,niter = 1000, seed = 230430)
+      ajuste <- bsts(y, state.specification = esp_estado,niter = 10000, seed = 230430)
       TS[[paste(c,s,p,sep = "_")]] <- ajuste
     }
   }
@@ -92,7 +92,7 @@ for(c in unique(sales_m$country)){
       esp_estado <- 
       AddLocalLinearTrend(list(), y) |> 
       AddSeasonal(y, nseasons = 12) 
-      ajuste <- bsts(y, state.specification = esp_estado,niter = 1000, seed = 230430)
+      ajuste <- bsts(y, state.specification = esp_estado,niter = 10000, seed = 230430)
       TS[[paste(c,s,sep = "_")]] <- ajuste
   }
 }
@@ -109,7 +109,7 @@ for(c in unique(sales_m$country)){
       esp_estado <- 
       AddLocalLinearTrend(list(), y) |> 
       AddSeasonal(y, nseasons = 12) 
-      ajuste <- bsts(y, state.specification = esp_estado,niter = 1000, seed = 230430)
+      ajuste <- bsts(y, state.specification = esp_estado,niter = 10000, seed = 230430)
       TS[[paste(c,sep = "_")]] <- ajuste
 }
 
@@ -120,44 +120,18 @@ y <-sales_m |>
 esp_estado <- 
   AddLocalLinearTrend(list(), y) |> 
   AddSeasonal(y, nseasons = 12) 
-ajuste <- bsts(y, state.specification = esp_estado,niter = 1000, seed = 230430)
+ajuste <- bsts(y, state.specification = esp_estado,niter = 10000, seed = 230430)
 TS[["total"]] <- ajuste
 
 saveRDS(TS, file = "../datos/TS.RDS") 
 TS<-readRDS(file = "../datos/TS.RDS") 
+#saveRDS(TS, file = "/home/urielmtzsa/itam/semestre4/metodos_analiticos/proyecto/datos/TS.RDS") 
+#TS<-readRDS(file = "/home/urielmtzsa/itam/semestre4/metodos_analiticos/proyecto/datos/TS.RDS") 
 
-
+# ======================= ANÁLISIS serie TOTAL
 
 ajuste <- TS[["total"]]
-dims <- ajuste$state.contributions |> dim()
-tiempo <- dims[3]
-contribuciones_tbl <- map(1:tiempo, ~ ajuste$state.contributions[,,.x] |> 
-  as_tibble() |> mutate(t = .x)) |> bind_rows() |> 
-  pivot_longer(trend:seasonal.12.1, values_to = "value", names_to = "comp") |> 
-  group_by(t, comp) |> 
-  summarise(media = mean(value), q5 = quantile(value, 0.05),
-            q95 = quantile(value, 0.95), .groups = "drop")
-
-#u<-serie1$state.specification
-#u[1,1]
-
-#head(contribuciones_tbl)
-#plot(serie1, "state", burn = 500)
-
-
-#u<-serie1$
-#u[1,1]
-
-
-
-
-y <- sales_m |> filter(country=="Poland",product=="Kaggle Advanced Techniques",store=="KaggleMart") |> select(num_sold) |> as.ts()
-esp_estado <- 
-  AddLocalLinearTrend(list(), y) |> 
-  AddSeasonal(y, nseasons = 12) 
-
-ajuste <- bsts(y, state.specification = esp_estado,
-               niter = 10000, seed = 230430)
+plot(ajuste, "state", burn = 2000)
 
 dims <- ajuste$state.contributions |> dim()
 tiempo <- dims[3]
@@ -173,120 +147,178 @@ ggplot(contribuciones_tbl,
   geom_ribbon(alpha = 0.1) + 
   geom_line(alpha = 1) + facet_wrap(~ comp, scales = "free_y", ncol = 1)
 
+pred_errors_tbl <- 
+  ajuste$one.step.prediction.errors |> 
+  t() |> as_tibble() |>
+  mutate(t = 1: tiempo) |> 
+  pivot_longer(-c(t), names_to = "sim", values_to = "valor") |> 
+  group_by(t) |> 
+  summarise(valor = mean(valor)) |> 
+  as_tsibble(index = t)
+
+ACF(pred_errors_tbl) |> 
+  autoplot() + ylim(c(-1,1))
 
 
+pred <- predict(ajuste, horizon = 24,burn=2000)
+plot(pred)
+
+error <- ajuste$one.step.prediction.errors |> apply(2, mean)
+qqnorm(error)
+qqline(error)
 
 
+# ======================= Total vs Producto vs Tienda vs País
 
+ajuste <- TS[["total"]]
+dims <- ajuste$state.contributions |> dim()
+tiempo <- dims[3]
+contribuciones_total <- map(1:tiempo, ~ ajuste$state.contributions[,,.x] |> 
+  as_tibble() |> mutate(t = .x)) |> bind_rows() |> 
+  pivot_longer(trend:seasonal.12.1, values_to = "value", names_to = "comp") |> 
+  group_by(t, comp) |> 
+  summarise(media = mean(value), q5 = quantile(value, 0.05),
+            q95 = quantile(value, 0.95), .groups = "drop") |>
+  group_by(t) |>
+  summarise(media_total = sum(media))
+pred <- predict(ajuste, horizon = 24,burn=2000)$mean
+contribuciones_total<-rbind(contribuciones_total,tibble(t = 49:72, media_total = pred))
 
-
-
-
-
-
-
-mod_spec_1 <- AddLocalLevel(list(), y )
-
-mod_spec_2 <- AddLocalLinearTrend(list(), y)
-
-mod_spec_3 <- AddLocalLevel(list(), y) |> 
-  AddSeasonal(nseasons = 12, y)
-
-mod_spec_4 <- AddLocalLinearTrend(list(), y) |> 
-  AddSeasonal(nseasons = 12, y) 
-
-mod_spec_5 <- AddSemilocalLinearTrend(list(), y) |> 
-  AddSeasonal(nseasons = 12, y) 
-
-mod_spec_6 <- AddSemilocalLinearTrend(list(), y) |> 
-  AddSeasonal(nseasons = 12, y) |> 
-  AddAr(lags = 2, y)
-
-specs <- list(mod_spec_1, mod_spec_2, mod_spec_3, mod_spec_4, mod_spec_5, mod_spec_6)
-
-ajustes <- map(specs, function(spec){
-  bsts(y, spec, niter = 1000, ping = 10000)
-})
-
-
-
-CompareBstsModels(ajustes, burn = 500)
-
-
-grViz("
-digraph {
-  graph [ranksep = 0.7, fontsize = 11]
-  node [shape = circle, style = filled, width = 1, fontcolor = blue, fontname = Helvetica, fontsize = 19]
-  node [color = green]
-    y  [label = Total]
-  node [color = steelblue]
-    A  [label = A]
-    AA [label = AA]
-    AB [label = AB]
-    AC [label = AC]
-  node [color = yellow]
-    B  [label = B]
-    BA [label = BA]
-    BB [label = BC]
-  edge [minlen = 2, color = gray, arrowsize = 0]
-    y -> A
-    y -> B
-    A -> AA
-    A -> AB
-    A -> AC
-    B -> BA
-    B -> BB
-    
-{ rank = same; A; B }
-{ rank = same; AA; AB; AC; BA; BB }
+i<-0
+for(c in unique(sales_m$country)){
+  for(s in unique(sales$store)){
+    for(p in unique(sales$product)){
+      ajuste <- TS[[paste(c,s,p,sep = "_")]]
+      dims <- ajuste$state.contributions |> dim()
+      tiempo <- dims[3]
+      contribuciones_tbl <- map(1:tiempo, ~ ajuste$state.contributions[,,.x] |> 
+        as_tibble() |> mutate(t = .x)) |> bind_rows() |> 
+        pivot_longer(trend:seasonal.12.1, values_to = "value", names_to = "comp") |> 
+        group_by(t, comp) |> 
+        summarise(media = mean(value), q5 = quantile(value, 0.05),
+                  q95 = quantile(value, 0.95), .groups = "drop") |>
+        group_by(t) |>
+        summarise(media_producto = sum(media)) |>
+        mutate(p = paste(c,s,p,sep = "_"))
+        pred <- predict(ajuste, horizon = 24,burn=2000)$mean
+        contribuciones_tbl<-rbind(contribuciones_tbl,tibble(t = 49:72, media_producto = pred,p = paste(c,s,p,sep = "_")))
+        if(i==0){contribuciones_producto<-contribuciones_tbl}else{contribuciones_producto<-rbind(contribuciones_producto,contribuciones_tbl)}
+        i<-i+1
+    }
+  }
 }
-", width = 600, height = 300
-)
+contribuciones_producto<-contribuciones_producto |>
+  group_by(t) |>
+  summarise(media_producto = sum(media_producto)) 
 
-
-
-
-grViz("
-digraph {
-  graph [ranksep = 0.7, fontsize = 11]
-  node [shape = circle, style = filled, width = 1, fontcolor = blue, fontname = Helvetica, fontsize = 19]
-  node [color = green]
-    T1  [label = Total]
-    T2  [label = Total]
-  node [color = steelblue]
-    A  [label = A]
-    AX [label = AX]
-    AY [label = AY]
-  node [color = yellow]
-    B  [label = B]
-    BX [label = BX]
-    BY [label = BY]
-  node [color = steelblue]
-    X  [label = X]
-    AX2 [label = AX]
-    BX2 [label = BX]
-  node [color = yellow]
-    Y  [label = Y]
-    AY2 [label = AY]
-    BY2 [label = BY]
-  edge [minlen = 2, color = gray, arrowsize = 0]
-    T1 -> A
-    T1 -> B
-    T2 -> X
-    T2 -> Y
-    A -> AX
-    A -> AY
-    B -> BX
-    B -> BY
-    X -> AX2
-    X -> BX2
-    Y -> AY2
-    Y -> BY2
-
-    
-{ rank = same; A; B }
-{ rank = same; AX; AY; BX; BY; AX2; AY2; BX2; BY2}
+i<-0
+for(c in unique(sales_m$country)){
+  for(s in unique(sales$store)){
+    ajuste <- TS[[paste(c,s,sep = "_")]]
+    dims <- ajuste$state.contributions |> dim()
+    tiempo <- dims[3]
+    contribuciones_tbl <- map(1:tiempo, ~ ajuste$state.contributions[,,.x] |> 
+      as_tibble() |> mutate(t = .x)) |> bind_rows() |> 
+      pivot_longer(trend:seasonal.12.1, values_to = "value", names_to = "comp") |> 
+      group_by(t, comp) |> 
+      summarise(media = mean(value), q5 = quantile(value, 0.05),
+                q95 = quantile(value, 0.95), .groups = "drop") |>
+      group_by(t) |>
+      summarise(media_store = sum(media)) |>
+      mutate(p = paste(c,s,sep = "_"))
+      pred <- predict(ajuste, horizon = 24,burn=2000)$mean
+      contribuciones_tbl<-rbind(contribuciones_tbl,tibble(t = 49:72, media_store = pred,p = paste(c,s,sep = "_")))
+      if(i==0){contribuciones_store<-contribuciones_tbl}else{contribuciones_store<-rbind(contribuciones_store,contribuciones_tbl)}
+      i<-i+1
+  }
 }
-", width = 600, height = 300
+contribuciones_store<-contribuciones_store |>
+  group_by(t) |>
+  summarise(media_store = sum(media_store)) 
+
+
+i<-0
+for(c in unique(sales_m$country)){
+  ajuste <- TS[[paste(c,sep = "_")]]
+  dims <- ajuste$state.contributions |> dim()
+  tiempo <- dims[3]
+  contribuciones_tbl <- map(1:tiempo, ~ ajuste$state.contributions[,,.x] |> 
+    as_tibble() |> mutate(t = .x)) |> bind_rows() |> 
+    pivot_longer(trend:seasonal.12.1, values_to = "value", names_to = "comp") |> 
+    group_by(t, comp) |> 
+    summarise(media = mean(value), q5 = quantile(value, 0.05),
+              q95 = quantile(value, 0.95), .groups = "drop") |>
+    group_by(t) |>
+    summarise(media_country = sum(media)) |>
+    mutate(p = paste(c,sep = "_"))
+    pred <- predict(ajuste, horizon = 24,burn=2000)$mean
+    contribuciones_tbl<-rbind(contribuciones_tbl,tibble(t = 49:72, media_country = pred,p = paste(c,sep = "_")))
+    if(i==0){contribuciones_country<-contribuciones_tbl}else{contribuciones_country<-rbind(contribuciones_country,contribuciones_tbl)}
+    i<-i+1
+}
+contribuciones_country<-contribuciones_country |>
+  group_by(t) |>
+  summarise(media_country = sum(media_country)) 
+
+contribuciones_tbl<-cbind(
+  contribuciones_total,
+  contribuciones_producto|>select(media_producto),
+  contribuciones_store |>select(media_store),
+  contribuciones_country |>select(media_country)
 )
+contribuciones_tbl<-contribuciones_tbl |>
+  mutate(
+    diff_total_producto = media_total - media_producto,
+    diff_total_store = media_total - media_store,
+    diff_total_country = media_total - media_country
+  )
+
+ggplot(contribuciones_tbl)+ 
+  geom_line(aes(x = t, y = media_total/1000,colour = "Total") ) +
+  geom_line(aes(x = t, y = media_producto/1000, colour = "Producto"),linetype = "dashed",size = 1) +
+  labs(x = "t", y = "sales (miles)") +
+  scale_color_manual(name = "Serie Jerárquica", values = c("Total" = "red", "Producto" = "darkblue")) + 
+  geom_vline(xintercept = 48, linetype="dotted", color = "black", size=1.5)
+
+ggplot(contribuciones_tbl)+ 
+  geom_line(aes(x = t, y = diff_total_producto/1000,colour = "Total - Producto")) +
+  geom_line(aes(x = t, y = diff_total_store/1000,colour = "Total - Store")) +
+  geom_line(aes(x = t, y = diff_total_country/1000,colour = "Total - Country")) +
+  labs(x = "t", y = "sales (miles)") +
+  scale_color_manual(name = "Diferencias", values = c(
+    "Total - Producto" = "darkblue","Total - Store" = "#218611","Total - Country" ="#77091b")) +
+  geom_hline(yintercept = 0, linetype="dotted", color = "black", size=1.5) +
+  geom_vline(xintercept = 48, linetype="dotted", color = "black", size=1.5)
+
+
+
+# ======================= Proporciones de tiendas sobre productos
+
+TSp<-list()
+for(c in unique(sales_m$country)){
+  for(s in unique(sales$store)){
+     y1 <-sales_m |> 
+      filter(country==c,store==s) |> 
+      select(product,num_sold) |> 
+      index_by(date) |>
+      mutate(total = sum(num_sold)) |>
+      mutate(pp = num_sold/total) 
+    for(p in unique(sales$product)){
+      y <-y1 |> 
+      filter(product==p) |> 
+      select(pp) |> 
+      as.ts()
+      esp_estado <- 
+      AddLocalLinearTrend(list(), y) |> 
+      AddSeasonal(y, nseasons = 12) 
+      ajuste <- bsts(y, state.specification = esp_estado,niter = 10000, seed = 230430)
+      TSp[[paste(c,s,p,sep = "_")]] <- ajuste
+    }
+  }
+}
+
+saveRDS(TSp, file = "/home/urielmtzsa/itam/semestre4/metodos_analiticos/proyecto/datos/TSp.RDS") 
+
+
+sum(list.files("/home/urielmtzsa/itam/semestre4/metodos_analiticos/proyecto/datos/")=="TS.RDS")
 
