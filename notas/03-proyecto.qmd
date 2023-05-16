@@ -64,11 +64,39 @@ Se utiliza la notación tilde "~" para indicar predicción coherente.
 
 ## Enfoque descendente (top-down)
 
-Bajo este enfoque, el método consiste en generar las predicciones para el Total de las series $y_t$ para postreriormente desagregarlas bajo la secuencia jerárquica.
+1. Generamos las predicciones para el Total de las series $y_t$
+2. Desagregamos hacia abajo siguiendo la secuencia jerárquica.
+
+
+
+
+
 
 ### Proporciones históricas promedio (**Average historical proportions**)
 
-### Proportions of the historical averages
+$$
+\begin{align}
+ \tag{3.1.2}
+ p_j=\frac{1}{T}\sum_{t=1}^{T}\frac{y_{j,t}}{{y_t}} \quad j=1,\dots,m
+\end{align}
+$$
+
+Cada proporción $p_j$ refleja el promedio de las proporciones históricas de las series en el último nivel inferior $y_{j,t}$ en el periodo $t=1,\dots,T$ relativo al total agregado en $y_t$.
+
+**Implementación:**
+Utilizando el paquete `fpp3`, este enfoque se realiza utilizando la función `top_down` ajustando el parámetro `method = average_propotiomn` 
+
+
+
+### Proporciones de los promedios históricos (**Proportions of the historical averages**)
+
+$$
+\begin{align}
+ \tag{3.1.2}
+ p_j={\sum_{t=1}^{T}\frac{y_{j,t}}{T}}\Big/{\sum_{t=1}^{T}\frac{y_t}{T}}
+\end{align}
+$$
+
 
 ### Forecast proportions
 
