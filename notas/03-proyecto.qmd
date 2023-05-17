@@ -55,6 +55,8 @@ $$
 
 Se utiliza la notación tilde "~" para indicar predicción coherente.
 
+Implementación `fpp3`:
+* función `bu = bottom_up()` dentro de la función `reconcile()`.
 
 ::: callout-note
 - Ventaja:las predicciones se realizan en el último nivel inferior lo que implica que no exista pérdida de información debida a la agragación.
@@ -67,45 +69,156 @@ Se utiliza la notación tilde "~" para indicar predicción coherente.
 1. Generamos las predicciones para el Total de las series $y_t$
 2. Desagregamos hacia abajo siguiendo la secuencia jerárquica.
 
+Denotemos por $p_1,\dots, p_m$ un conjunto de proporciones de desagregación que determinan la forma en que debe distribuirse la serie Total para generar las predicciones de los niveles inferiores.
 
+Si utilizamos proporciones en el ejemplo del diagrama para series de tiempo jerárquicas obtenemos:
 
+$$
+\begin{align}
+ \tag{3.2.1}
+ \tilde{y}_{\text{AA},t}=p_1\hat{y}_t, \quad \tilde{y}_{\text{AB},t}=p_2\hat{y}_t, \quad
+ \tilde{y}_{\text{AC},t}=p_3\hat{y}_t, \quad \tilde{y}_{\text{BA},t}=p_4\hat{y}_t, \quad
+ \tilde{y}_{\text{BB},t}=p_5\hat{y}_t.
+\end{align}
+$$
+Habiendo obtenido las predicciones para $h$ periodos adelante de la serie última inferior, éstas se agregan para generar las predicciones coherentes para el resto de la series. 
 
+Implementación `fpp3`:
+* función `bu = top_down()` dentro de la función `reconcile()`.
+
+_____________
+*A continuación revisarempos los dos métodos más comunes para especificar las proporciones de desagregación utilizando las proporciones históricas de los datos.*
 
 
 ### Proporciones históricas promedio (**Average historical proportions**)
 
 $$
 \begin{align}
- \tag{3.1.2}
+ \tag{3.2.2}
  p_j=\frac{1}{T}\sum_{t=1}^{T}\frac{y_{j,t}}{{y_t}} \quad j=1,\dots,m
 \end{align}
 $$
 
 Cada proporción $p_j$ refleja el promedio de las proporciones históricas de las series en el último nivel inferior $y_{j,t}$ en el periodo $t=1,\dots,T$ relativo al total agregado en $y_t$.
 
-**Implementación:**
-Utilizando el paquete `fpp3`, este enfoque se realiza utilizando la función `top_down` ajustando el parámetro `method = average_propotiomn` 
 
+
+**Implementación:**
+Utilizando el paquete `fpp3`, este enfoque se realiza utilizando la función `top_down` ajustando el parámetro `method = average_proportions` 
 
 
 ### Proporciones de los promedios históricos (**Proportions of the historical averages**)
 
+
 $$
 \begin{align}
- \tag{3.1.2}
- p_j={\sum_{t=1}^{T}\frac{y_{j,t}}{T}}\Big/{\sum_{t=1}^{T}\frac{y_t}{T}}
+ \tag{3.2.3}
+ p_j={\sum_{t=1}^{T}\frac{y_{j,t}}{T}}\Big/{\sum_{t=1}^{T}\frac{y_t}{T}} \quad \text{para} \quad j=1,\dots,m 
 \end{align}
 $$
+
+Cada proporción $p_j$ captura el valor promedio histórico de la última serie inferior $y_{j,t}$ relativo al valor promedio del total agregado $y_t$.
+
+**Implementación:**
+Utilizando el paquete `fpp3`, este enfoque se realiza utilizando la función `top_down` ajustando el parámetro `method = proportion_averages`
+
+::: callout-note
+- Ventaja:simplicidad... sólo se requiuere generar predicciones para la serie más agregada del nivel superior mayor. Estos enfoques producen predicciones confiables para niveles agregados o con pocos datos.
+
+- Desventaja: pérdida de información debida a la agregación; no es posible explotar las características de las series individuales, tales como estacionalidad, tendencia, días de asueto, etc.
+:::
+
 
 
 ### Forecast proportions
 
 
+$$
+\begin{align}
+ \tag{3.2.4}
+ p_j=\prod^{K-1}_{\ell=0}\frac{\hat{y}_{j,h}^{(\ell)}}{\hat{S}_{j,h}^{(\ell+1)}}
+\end{align}
+$$
+
+
+
+
+$$
+\begin{align}
+ \tag{3.2.5}
+ \hat{y}_{\text{A},h}^{(1)} = \hat{y}_{\text{B},h}^{(1)} = \hat{y}_{h} =  \tilde{y}_{h};
+\end{align}
+$$
+$$
+\begin{align}
+ \tag{3.2.6}
+\hat{y}_{\text{AA},h}^{(1)} = \hat{y}_{\text{AB},h}^{(1)} = \hat{y}_{\text{AC},h}^{(1)} =  \hat{y}_{\text{A},h};
+\end{align}
+$$
+$$
+\begin{align}
+ \tag{3.2.7}
+\hat{y}_{\text{AA},h}^{(2)} = \hat{y}_{\text{AB},h}^{(2)} = \hat{y}_{\text{AC},h}^{(2)} = \hat{y}_{\text{BA},h}^{(2)} = \hat{y}_{\text{BB},h}^{(2)} = \hat{y}_{h}=\tilde{y}_{h};
+\end{align}
+$$
+$$
+\begin{align}
+ \tag{3.2.8}
+\hat{S}_{\text{AA},h}^{(1)} = \hat{S}_{\text{AB},h}^{(1)} = \hat{S}_{\text{AC},h}^{(1)} =  \hat{y}_{\text{AA},h}+\hat{y}_{\text{AB},h}+\hat{y}_{\text{AC},h};
+\end{align}
+$$
+$$
+\begin{align}
+\tag{3.2.9}
+\hat{S}_{\text{AA},h}^{(2)} = \hat{S}_{\text{AB},h}^{(2)} = \hat{S}_{\text{AC},h}^{(2)} = \hat{S}_{\text{A},h}^{(1)} = \hat{S}_{\text{B},h}^{(1)} = \hat{S}_{h}= \hat{y}_{\text{A},h}+\hat{y}_{\text{B},h};
+\end{align}
+$$
 
 
 
 
 
+
+
+Las predicciones coherentes están dadas por (partiendo de la rama izquierda más alejada de la jerarquía):
+ 
+ 
+$$
+\begin{align}
+ \tag{3.2.10}
+ \tilde{y}_{\text{A},h} = \Bigg(\frac{\hat{y}_{\text{A},h}}{\hat{S}_{\text{A},h}^{(1)}}\Bigg)\tilde{y}_{h} =
+ \Bigg(\frac{\hat{y}_{\text{AA},h}^{(1)}}{\hat{S}_{\text{AA},h}^{(2)}}\Bigg) \tilde{y}_{h}
+\end{align}
+$$
+y
+
+$$
+\begin{align}
+ \tag{3.2.11}
+  \tilde{y}_{\text{AA},h} = \Bigg(\frac{\hat{y}_{\text{AA},h}}{\hat{S}_{\text{AA},h}^{(1)}}\Bigg)
+  \tilde{y}_{\text{A},h} = \Bigg(\frac{\hat{y}_{\text{AA},h}}{\hat{S}_{\text{AA},h}^{(1)}}\Bigg)
+  \Bigg(\frac{\hat{y}_{\text{AA},h}^{(1)}}{\hat{S}_{AA,h}^{(2)}}\Bigg)
+  \tilde{y}_{h}.
+\end{align}
+$$  
+Por consecuencia:
+  
+$$
+\begin{align}
+ \tag{3.2.12}
+  p_1=\Bigg(\frac{\hat{y}_{\text{AA},h}}{\hat{S}_{\text{AA},h}^{(1)}}\Bigg)
+  \Bigg(\frac{\hat{y}_{\text{AA},h}^{(1)}}{\hat{S}_{AA,h}^{(2)}}\Bigg). 
+\end{align}
+$$
+Similarmente para las otras proporciones.
+
+
+**Implementación:**
+Utilizando el paquete `fpp3`, este enfoque se realiza utilizando la función `top_down` ajustando el parámetro `method = forecast_proportions`. Este parámetro es la selección por default para la función `top_down` cuando éste no se especifica.
+
+::: callout-note
+- Desventaja (para todos los métodos `top-down`): las predicciones coherentes que se generan no son insesgadas aún cuando la base de predicción sea insesgada.
+:::
 
 
 ## Enfoque *middle-out*
