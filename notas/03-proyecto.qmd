@@ -53,7 +53,9 @@ $$
 \end{align}
 $$
 
-Se utiliza la notación tilde "~" para indicar predicción coherente.
+::: callout-note
+**Se utiliza la notación tilde "~" para indicar predicción coherente.**
+:::
 
 Implementación `fpp3`:
 * función `bu = bottom_up()` dentro de la función `reconcile()`.
@@ -132,6 +134,22 @@ Utilizando el paquete `fpp3`, este enfoque se realiza utilizando la función `to
 
 ### Forecast proportions
 
+En los métdos "*top-down*", al calcular las proporciones de desagreagación con información histórica, no se capturan cambios en el tiempo, perdemos precisión en las predicciones frente al método "*bottom-up*" en niveles inferiores de la jerarquía.
+
+*¿Cómo lo resolvemos?*
+
+**Proporciones basadas en las predicciones...**
+
+Metodología:
+
+*Jerarquía de $k=1$ nivel*:
+- Predicciones iniciales: se generan a $h$ periodos adelante para todas las series (no son **coherentes** ni utilizables).
+- Proporciones de Predicción: calculamos las proporciones para cada predicción inicial en el nivel último inferior agregando para todas las predicciones iniciales en este nivel.
+- Con estas proporciones desagregamos el nivel superior de la predicción inicial  para generar predicciones coherentes para toda la jerarquía. 
+
+*Para una jerarquía de $k$-niveles*:   
+- Repite el proceso para cada nodo iniciando con el nivel superior y hacia abajo, dando como resultado una fórmula general para obtener las proporciones de predicción:
+
 
 $$
 \begin{align}
@@ -139,9 +157,17 @@ $$
  p_j=\prod^{K-1}_{\ell=0}\frac{\hat{y}_{j,h}^{(\ell)}}{\hat{S}_{j,h}^{(\ell+1)}}
 \end{align}
 $$
+donde:   
+- $j=1,\dots,m$
+- $\hat{y}_{j,h}^{(\ell)}$ es la predicción inicial a $h$ periodos de la serie correspondiente al nodo que está $\ell$ niveles por encima de $j$
+- $\hat{S}_{j,h}^{(\ell+1)}$ es la suma de las predicciones iniciales a $h$ periodos por debajo del nodo que está $\ell$ niveles por encima de $j$ y está direcatmente conectada a ese nodo.
 
+Con estas proporciones desagregamos las predicciiones iniciales del "**Total**" de las series para generar predicciones coherentes a $h$ periodos de las series en el último nivel inferior.
 
+Para ejemplificar lo anterior, usaremos el conocido diagrama ejemplo para series de tiempo jerárquicas (ver XXX).
 
+- Asumiremos que se han generado predicciones iniciales para cada serie en la jerarquía.
+- Recordemos que en cualquier método "_top-down_", para las series en el máximo nivel superior "**Total**"  $\tilde{y}_{h}=\hat{y}_{h}$.
 
 $$
 \begin{align}
@@ -149,6 +175,7 @@ $$
  \hat{y}_{\text{A},h}^{(1)} = \hat{y}_{\text{B},h}^{(1)} = \hat{y}_{h} =  \tilde{y}_{h};
 \end{align}
 $$
+
 $$
 \begin{align}
  \tag{3.2.6}
@@ -161,12 +188,14 @@ $$
 \hat{y}_{\text{AA},h}^{(2)} = \hat{y}_{\text{AB},h}^{(2)} = \hat{y}_{\text{AC},h}^{(2)} = \hat{y}_{\text{BA},h}^{(2)} = \hat{y}_{\text{BB},h}^{(2)} = \hat{y}_{h}=\tilde{y}_{h};
 \end{align}
 $$
+
 $$
 \begin{align}
  \tag{3.2.8}
 \hat{S}_{\text{AA},h}^{(1)} = \hat{S}_{\text{AB},h}^{(1)} = \hat{S}_{\text{AC},h}^{(1)} =  \hat{y}_{\text{AA},h}+\hat{y}_{\text{AB},h}+\hat{y}_{\text{AC},h};
 \end{align}
 $$
+
 $$
 \begin{align}
 \tag{3.2.9}
@@ -175,13 +204,7 @@ $$
 $$
 
 
-
-
-
-
-
 Las predicciones coherentes están dadas por (partiendo de la rama izquierda más alejada de la jerarquía):
- 
  
 $$
 \begin{align}
@@ -230,7 +253,8 @@ Este método combina los enfoques _bottom-up_ y _top-down_ y se utiliza estricta
 3. Para las series inferiores, se generan predicciones coherentes utilizando el enfoque _top-down_ agregando las predicciones del nivel medio hacia "abajo".
 
 Implementación:
-* función `middle_out()`
-* Especificar el nivel medio con el argumento `level`
-* Seleccionar el enfoque _top-down_ con el argumento `method`
+
+- función `middle_out()`.  
+- Especificar el nivel medio con el argumento `level`.  
+- Seleccionar el enfoque _top-down_ con el argumento `method`.  
 

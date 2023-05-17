@@ -26,7 +26,7 @@ Hemos seleccionado una base de datos simple de las librerías de Kaggle (datos a
 Para utilizar las técnicas discutidas en esta sección se planterá el problema de pronosticar las ventas de una empresa a lo largo de los años **2017 a 2020** con una estructura **jerárquica** en los datos. El conjunto de datos original cuenta con observaciones a nivel diario, sin embargo, con el fin de simplificar el problema y ejemplificar la solución de este tipo de estructuras de series temporales se optó por presentar la serie a **nivel mensual**.
 
 **DATABASE**
-CLI: kaggle competitions download -c tabular-playground-series-sep-2022
+CLI: `kaggle competitions download -c tabular-playground-series-sep-2022`
 [Tabular Playground Series - Sep 2022](https://www.kaggle.com/competitions/tabular-playground-series-sep-2022)
 
 Los datos son ficiticios y fueron creados como _dataset_ lúdico para incrementar las habilidades en los modelos de Aprendizaje de Máquina. No obstante, la estructura de diseño permite explotarlo aún más, en nuestro caso, para ejemplificar prediccines en modelos jerárquicos o agrupados. Es importante mencionar que se integraron efectos naturales de las series de tiempo como son días feriados, estacionalidad, tendencia, etc.
