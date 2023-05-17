@@ -207,6 +207,7 @@ for(c in unique(sales_m$country)){
     }
   }
 }
+contribuciones_producto_tbl<-contribuciones_producto
 contribuciones_producto<-contribuciones_producto |>
   group_by(t) |>
   summarise(media_producto = sum(media_producto)) 
@@ -232,6 +233,7 @@ for(c in unique(sales_m$country)){
       i<-i+1
   }
 }
+contribuciones_store_tbl<-contribuciones_store
 contribuciones_store<-contribuciones_store |>
   group_by(t) |>
   summarise(media_store = sum(media_store)) 
@@ -256,6 +258,7 @@ for(c in unique(sales_m$country)){
     if(i==0){contribuciones_country<-contribuciones_tbl}else{contribuciones_country<-rbind(contribuciones_country,contribuciones_tbl)}
     i<-i+1
 }
+contribuciones_country_tbl <- contribuciones_country
 contribuciones_country<-contribuciones_country |>
   group_by(t) |>
   summarise(media_country = sum(media_country)) 
@@ -272,6 +275,22 @@ contribuciones_tbl<-contribuciones_tbl |>
     diff_total_store = media_total - media_store,
     diff_total_country = media_total - media_country
   )
+
+contribuciones_tbl_2<-contribuciones_producto_tbl |>
+  separate(p, c("country","store","product"),sep="_") |>
+  group_by(t,country) |>
+  summarise(media_producto = sum(media_producto)) |>
+  ungroup()
+contribuciones_tbl_2 <- merge(contribuciones_tbl_2,contribuciones_country_tbl, by.x = c("t","country"),by.y =c("t", "p"),all=TRUE) 
+
+
+contribuciones_tbl_3<-contribuciones_store_tbl |>
+  separate(p, c("country","store"),sep="_") |>
+  group_by(t,country) |>
+  summarise(media_store = sum(media_store)) |>
+  ungroup()
+contribuciones_tbl_3 <- merge(contribuciones_tbl_3,contribuciones_country_tbl, by.x = c("t","country"),by.y =c("t", "p"),all=TRUE) 
+
 
 ggplot(contribuciones_tbl)+ 
   geom_line(aes(x = t, y = media_total/1000,colour = "Total") ) +
@@ -290,6 +309,33 @@ ggplot(contribuciones_tbl)+
   geom_hline(yintercept = 0, linetype="dotted", color = "black", size=1.5) +
   geom_vline(xintercept = 48, linetype="dotted", color = "black", size=1.5)
 
+
+ggplot(contribuciones_tbl_2)+ 
+  geom_line(aes(x = t, y = media_country/1000,colour = "Country") ) +
+  geom_line(aes(x = t, y = media_producto/1000, colour = "Producto"),linetype = "dashed",size = 1) +
+  labs(x = "t", y = "sales (miles)") +
+  scale_color_manual(name = "Serie Jerárquica", values = c("Country" = "red", "Producto" = "darkblue")) + 
+  geom_vline(xintercept = 48, linetype="dotted", color = "black", size=1.5) +
+  facet_wrap(vars(country), nrow = 3, scales = "free_y")
+
+
+
+
+
+ggplot(contribuciones_tbl)+ 
+  geom_line(aes(x = t, y = media_total/1000,colour = "Total") ) +
+  geom_line(aes(x = t, y = media_store/1000, colour = "Store"),linetype = "dashed",size = 1) +
+  labs(x = "t", y = "sales (miles)") +
+  scale_color_manual(name = "Serie Jerárquica", values = c("Total" = "red", "Store" = "darkblue")) + 
+  geom_vline(xintercept = 48, linetype="dotted", color = "black", size=1.5)
+
+ggplot(contribuciones_tbl_3)+ 
+  geom_line(aes(x = t, y = media_country/1000,colour = "Country") ) +
+  geom_line(aes(x = t, y = media_store/1000, colour = "Store"),linetype = "dashed",size = 1) +
+  labs(x = "t", y = "sales (miles)") +
+  scale_color_manual(name = "Serie Jerárquica", values = c("Country" = "red", "Store" = "darkblue")) + 
+  geom_vline(xintercept = 48, linetype="dotted", color = "black", size=1.5) +
+  facet_wrap(vars(country), nrow = 3, scales = "free_y")
 
 
 # ======================= Proporciones de tiendas sobre productos
@@ -318,7 +364,87 @@ for(c in unique(sales_m$country)){
 }
 
 saveRDS(TSp, file = "/home/urielmtzsa/itam/semestre4/metodos_analiticos/proyecto/datos/TSp.RDS") 
+TSp<-readRDS(file = "/home/urielmtzsa/itam/semestre4/metodos_analiticos/proyecto/datos/TSp.RDS") 
 
 
-sum(list.files("/home/urielmtzsa/itam/semestre4/metodos_analiticos/proyecto/datos/")=="TS.RDS")
+i<-0
+for(c in unique(sales_m$country)){
+  for(s in unique(sales$store)){
+    for(p in unique(sales$product)){
+      ajuste <- TSp[[paste(c,s,p,sep = "_")]]
+      dims <- ajuste$state.contributions |> dim()
+      tiempo <- dims[3]
+      contribuciones_p <- map(1:tiempo, ~ ajuste$state.contributions[,,.x] |> 
+        as_tibble() |> mutate(t = .x)) |> bind_rows() |> 
+        pivot_longer(trend:seasonal.12.1, values_to = "value", names_to = "comp") |> 
+        group_by(t, comp) |> 
+        summarise(media = mean(value), q5 = quantile(value, 0.05),
+                  q95 = quantile(value, 0.95), .groups = "drop") |>
+        group_by(t) |>
+        summarise(media_producto = sum(media)) |>
+        mutate(p = paste(c,s,p,sep = "_"))
+        pred <- predict(ajuste, horizon = 24,burn=2000)$mean
+        contribuciones_p<-rbind(contribuciones_p,tibble(t = 49:72, media_producto = pred,p = paste(c,s,p,sep = "_")))
+        if(i==0){contribuciones_p_producto<-contribuciones_p}else{contribuciones_p_producto<-rbind(contribuciones_p_producto,contribuciones_p)}
+        i<-i+1
+    }
+  }
+}
 
+pp1<-contribuciones_producto_tbl |>
+  separate(p, c("country","store","product"),sep="_") |>
+  filter(country == "Poland") |>
+  filter(store == "KaggleMart") 
+
+pp2<-contribuciones_store_tbl |>
+  separate(p, c("country","store"),sep="_") |>
+  filter(country == "Poland") |>
+  filter(store == "KaggleMart") 
+
+pp3<-contribuciones_p_producto |>
+  separate(p, c("country","store","product"),sep="_") |>
+  filter(country == "Poland") |>
+  filter(store == "KaggleMart") |>
+  group_by(t,country,store) |>
+  mutate(p_all = sum(media_producto)) |>
+  mutate(media_producto = media_producto/p_all)
+
+pp4<-merge(pp2,pp3, by =  c("t","country","store"),all=TRUE) |> 
+  tibble() |>
+  mutate(media_producto=round(media_producto*media_store,0))
+
+pp4<-merge(pp4,pp1, by =  c("t","country","store","product"),all=TRUE,suffixes = c("_proportion","_serie")) |> 
+  tibble() 
+
+ggplot(pp4)+ 
+  geom_line(aes(x = t, y = media_producto_serie/1000,colour = "Producto") ) +
+  geom_line(aes(x = t, y = media_producto_proportion/1000, colour = "Store"),linetype = "dashed",size = 1) +
+  labs(x = "t", y = "sales (miles)", title = "Poland & KaggleMart") +
+  scale_color_manual(name = "Serie Jerárquica", values = c("Producto" = "red", "Store" = "darkblue")) + 
+  geom_vline(xintercept = 48, linetype="dotted", color = "black", size=1.5) +
+  facet_wrap(vars(product), nrow = 2, scales = "free_y")
+
+ppp1<-contribuciones_producto_tbl |>
+  separate(p, c("country","store","product"),sep="_") |>
+  filter(country == "Germany") |>
+  filter(store == "KaggleRama") 
+
+ppp2<-contribuciones_store_tbl |>
+  separate(p, c("country","store"),sep="_") |>
+  filter(country == "Germany") |>
+  filter(store == "KaggleRama") 
+
+ppp3<-contribuciones_p_producto |>
+  separate(p, c("country","store","product"),sep="_") |>
+  filter(country == "Germany") |>
+  filter(store == "KaggleRama") |>
+  group_by(t,country,store) |>
+  mutate(p_all = sum(media_producto)) |>
+  mutate(media_producto = media_producto/p_all)
+
+ppp4<-merge(ppp2,ppp3, by =  c("t","country","store"),all=TRUE) |> 
+  tibble() |>
+  mutate(media_producto=round(media_producto*media_store,0))
+
+ppp4<-merge(ppp4,ppp1, by =  c("t","country","store","product"),all=TRUE,suffixes = c("_proportion","_serie")) |> 
+  tibble() 
