@@ -13,22 +13,116 @@ source("../src/utils/utils.r", encoding = 'UTF-8')
 
 **Matrix notation**
 
-## Mapping matrices
+En la sección 2 se definió previamente la notación matricial a utilizar:
+
+-   las ecuaciones (2.1.1) y (2.1.3) representan como se agregan los datos bajo la estructura jerárquica de la Figura A
+-   las ecuaciones (2.2.2) y (2.2.3) representan como se agregan los datos bajo la estructura agrupada de la Figura B.
+
+Recordemos que estas ecuaciones podríamos imaginarlas como restricciones de agregación o igualdades de adición y utilizando la notación matricial se representan eficientemente.
+
+Recorsmoe que en la notación matricial compacta, la representación matricial de ambos enfoques queda determinada por la siguiente ecuación:
+
+$$
+\begin{align}
+  \tag{2.2.4}
+  \boldsymbol{y}_t=\boldsymbol{S}\boldsymbol{b}_{t},
+\end{align}
+$$
+
+donde:
+
+-   $\boldsymbol{y}_t$: vector $n$-dimensional con todas las observaciones de la jerarquía en el tiempo $t$.\
+-   $\boldsymbol{S}$: matriz de acumulación.\
+-   $\boldsymbol{b}_t$: es un vector $m$-dimensional de las observaciones en el nivel último inferior de la jerarquía.
+
+(Con el objetivo de mantener la extensión adecuada, se sugiere al lector regresar a la sección 2 para detalles.)
+
+
+## Mapeo con Matrices (Mapping matrices)
+
+La notación matricial facilita la representación de todos los métodos de predicción de series de tiempo jerárquicos o agrupados.
+
+*Predicciones base*.
+-   Predecimos todas las series sin considerar restricciones de agregación.
+-   Denotamos $\hat{\boldsymbol{y}}_h$ con $h$ horizonte de predicción.
+-   Apiladas en el mismo orden que los datos $\boldsymbol{y}_t$
+
+El conjunto de todos los métodos de predicción, ya sea para estructuras jerárquicas o agrupadas, puede representarse por (sólo para métodos generales de reconciliación lineal):
+
+$$
+\begin{align}
+ \tag{4.1.3}
+  \tilde{\boldsymbol{y}}_h=\boldsymbol{S}\boldsymbol{G}\hat{\boldsymbol{y}}_h 
+\end{align}
+$$
+
+donde:    
+
+-   $\boldsymbol{G}$ matriz que mapea las predicciones base al nivel inferior.        
+-   $\boldsymbol{S}$ matriz de acumulación, las anteriores son adicionadas hacia arriba bajo la estructura de agregación para producir el conjunto **predicciones coherentes** $\boldsymbol{y}_h$.   
+
+La matriz $\boldsymbol{G}$ se define con base en el método implementado:
 
 
 
-## Reconciliación en las Predicciones
+_Ejemplo_: bajo la jerarquía: _Figura A: diagrama para series de tiempo jerárquicas_
+
+Método **bottom-up**
+
+$$
+\boldsymbol{G}=
+  \begin{bmatrix}
+    0 & 0 & 0 & 1 & 0 & 0 & 0 & 0\\
+    0 & 0 & 0 & 0 & 1 & 0 & 0 & 0\\
+    0 & 0 & 0 & 0 & 0 & 1 & 0 & 0\\
+    0 & 0 & 0 & 0 & 0 & 0 & 1 & 0\\
+    0 & 0 & 0 & 0 & 0 & 0 & 0 & 1\\
+  \end{bmatrix}.
+$$
+Notemos que la matriz $\boldsymbol{G}$ está particionada en 2:
+
+-   Las columnas de 0's corresponden a las predicciones base de la series que están por encima del nivel inferior (fondo).
+-   La matriz identidad de dimensión $m$ recoge las predicciones base del nivel inferior (fondo), que posteriormente son sumadas por la matris $\boldsymbol{S}$
+
+____________________
+
+Método: cualquier **top-down**
+
+$$
+\boldsymbol{G}=
+    \begin{bmatrix}
+      p_1 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+      p_2 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+      p_3 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+      p_4 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+      p_5 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+    \end{bmatrix}.
+$$
+
+-   La primer columna corresponde incluye el conjunto de proporciones que distribuyen las predicciones base del máximo nivel superior (top) hacia el nivel inferior (fondo), que posteriormente son adicionadas por la matriz $\boldsymbol{S}$
+-   El resto de las columnas mapean a 0 las predicciones base que están por debajo del máximo nivel superior de agregación.
+
+____________________
+
+Método: **middle-out**.  
+
+1.  La matriz $\boldsymbol{G}$ es una comnbinación de las dos anteriores.
+2.  Utilizando un cojunto de proporciones, las predicciones base para algún nivel preseleccionado será desagregado hacia el nivel inferior, el resto de las predicciones se mapean a 0.
+3.  Finalmente, las predicciones inferiores (fondo) son sumadas ascendiendo a través de la jerarquía via la matriz de agregación.
 
 
+## Reconciliación de las Predicciones
 
-## Enfoque de Reconciliación Óptima MinT (*Minimal Trace*)
+Los métodos estuadiados (tradicionales) tienen como limitante el hecho de enfocarse en una predicción base desde un solo nivel de agregación para porteriormente agregar o desagregar y generar predicciones coherentes para el resto el resto de las series.
 
-Sin profundizar mucho en este tema, haremos un esbozo sobre este enfoque, en el que buscamos la matriz $G$ que minimice el error de predicción para el conjunto de predicciones coherentes que hayamos realizado.
+Sabemos que producto de matrices $\boldsymbol{SG}$ combina y reconcilia todas las predicciones base dando lugar a predicciones coherentes...
 
-Supongamos que logramos generar predicciones coherentes bajo la ecuación (revisada en la sección anterior):
-
-$$\tilde{\boldsymbol{y}}_h=\boldsymbol{S}\boldsymbol{G}\hat{\boldsymbol{y}}_h$$
-
+**¿Podemos encontrar la matriz óptima $\boldsymbol{G}$ para obtener la mayor perecisión?
 
 
+## Enfoque de Reconciliación Óptima MinT
+
+Sin profundizar mucho en este tema, sólo mencionaremos el objetivo, que consiste en buscar la matriz $G$ que minimice la varianza de la predicción **Total** para el conjunto de predicciones coherentes, por lo que se le denomina
+
+**Método de Reconciliación Óptima por Traza Mínima, _Minimum Trace (Mint)_**
 

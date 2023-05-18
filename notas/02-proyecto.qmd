@@ -37,6 +37,7 @@ Esencialmente, estas series se organizan en una estructura por niveles, siendo e
 La siguiente figura nos permitira conceptualizar de forma intuitiva las estructuras jerárquicas y servirá como base para construir las ecuaciones y notación necesaria.
 
 ![](figuras/diagram_hierarchical.png)
+*Figura A: diagrama para series de tiempo jerárquicas*
 
 ```{r, fig.cap="Figure: Diagrama de árbol de una estructura jerárquica de 2 niveles", eval=FALSE, echo = FALSE}
 
@@ -72,6 +73,7 @@ digraph {
 )
 
 ```
+
 
 Denotemos la $t$th observación por $y_{t}$ donde $t=1,...,T$. En el gráfico anterior podemos osbervar que la estructura jerárquica nos muestra que el Total está desagregado en 2 series $A$ y $B$ en el nivel 1, que a su vez se desagregan en 3 y 2 series respectivamente en el nivel más bajo. Esto implica que tenemos 8 (1, 2, 5) series, con 5 en el último nivel de la jerarquía.
 
@@ -147,14 +149,14 @@ $$
 
 donde:
 
--   $y_t$: vector $n$-dimensional con todas las observaciones de la jerarquía en el tiempo $t$.\
+-   $\boldsymbol{y}_t$: vector $n$-dimensional con todas las observaciones de la jerarquía en el tiempo $t$.\
 -   $\boldsymbol{S}$: matriz de acumulación.\
 -   $\boldsymbol{b}_t$: es un vector $m$-dimensional de las observaciones en el nivel último inferior de la jerarquía.
 
 *¿Qué representa nuestra matriz, cómo induce las relaciones de jerarquía, cómo se construye?*.
 
-1.  La primer fila de la matriz representa la ecuación \ref{2.1.1}, la serie en el nivel más alto de la jerarquía.
-2.  En este caso, la segunda y tercer fila representan \ref{2.1.3} correspondientes a las series $A$ y $B$ para el nivel 2 de nuestro ejemplo.
+1.  La primer fila de la matriz representa la ecuación (2.1.1), la serie en el nivel más alto de la jerarquía.
+2.  En este caso, la segunda y tercer fila representan (2.1.3) correspondientes a las series $A$ y $B$ para el nivel 2 de nuestro ejemplo.
 3.  $\vdots$ (similar al nivel 2, se construyen niveles adicionales inferiores hasta llegar al penúltimo nivel).
 n.  El último nivel deberá ser presentado por una matriz identidad $I_m$.
 
@@ -275,6 +277,7 @@ Es necesario indicar que no se tiene información suficiente para poder determin
 En este caso, los datos no tienen una forma jerárquica de desagregarse naturalmente. La siguiente figura es un ejemplo simple para una estructura agrupada.
 
 ![](figuras/diagram_grouped.png)
+*Figura B: diagrama para series de tiempo agrupadas*
 
 ```{r, fig.cap="Figure: Diagrama de árbol de una estructura agrupada de 2 niveles", eval = FALSE, echo = FALSE}
 
@@ -326,7 +329,7 @@ digraph {
 ```
 
 
-Es importante notar que en el caso de estructuras agrupadas, existen formas alternativas de agregación. En el ejemplo anterior, observamos las representaciones alrternativas que tiene una estructura de agrupación con 2 niveles.
+Observemos que en estas estructuras existen formas alternativas de agregación. En el ejemplo anterior, la agregación de $X$ y $Y$ es alternativa con $A$ y $B$. 
 
 Continuando con el ejemplo del gráfico, tenemos entonces que para cualquier tiempo $t$:
 
@@ -401,9 +404,10 @@ $$
 $$
 
 donde:
-- $y_t$: vector $n$-dimensional con todas las observaciones de la jerarquía en el tiempo $t$
-- $\boldsymbol{S}$: matriz de acumulación 
-- $\boldsymbol{b}_t$: es un vector $m$-dimensional de las observaciones en el nivel último inferior de la jerarquía.
+
+-   $\boldsymbol{y}_t$: vector $n$-dimensional con todas las observaciones de la jerarquía en el tiempo $t$
+-   $\boldsymbol{S}$: matriz de acumulación 
+-   $\boldsymbol{b}_t$: es un vector $m$-dimensional de las observaciones en el nivel último inferior de la jerarquía.
 
 *¿Qué representa nuestra matriz, cómo induce las relaciones de jerarquía, cómo se construye?*
 

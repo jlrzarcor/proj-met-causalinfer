@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>INVESTIGACIÓN SOBRE MÉTODOS DE PREDICCIÓN EN SERIES DE TIEMPO JERÁRQUICAS O AGRUPADAS - 4&nbsp; Reconciliación en las Predicciones</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./05-proyecto.html" rel="next">
+<link href="./03-proyecto.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "Sin resultados",
+    "search-matching-documents-text": "documentos encontrados",
+    "search-copy-link-title": "Copiar el enlace en la búsqueda",
+    "search-hide-matches-text": "Ocultar resultados adicionales",
+    "search-more-match-text": "resultado adicional en este documento",
+    "search-more-matches-text": "resultados adicionales en este documento",
+    "search-clear-button-title": "Borrar",
+    "search-detached-cancel-button-title": "Cancelar",
+    "search-submit-button-title": "Enviar"
+  }
+}</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Reconciliación en las Predicciones</span></h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">INVESTIGACIÓN SOBRE MÉTODOS DE PREDICCIÓN EN SERIES DE TIEMPO JERÁRQUICAS O AGRUPADAS</a> 
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">Inicio</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-proyecto.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introducción y Definición del Problema</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-proyecto.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Tipos de estructuras que surgen en datos desagregados</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-proyecto.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Enfoque tradicional de predicciones a un nivel de agregación</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-proyecto.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Reconciliación en las Predicciones</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-proyecto.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Predicciones para resolver el Problema de Ventas</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./99-referencias.html" class="sidebar-item-text sidebar-link">Referencias</a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Tabla de contenidos</h2>
+   
+  <ul>
+  <li><a href="#mapeo-con-matrices-mapping-matrices" id="toc-mapeo-con-matrices-mapping-matrices" class="nav-link active" data-scroll-target="#mapeo-con-matrices-mapping-matrices"><span class="toc-section-number">4.1</span>  Mapeo con Matrices (Mapping matrices)</a></li>
+  <li><a href="#reconciliación-de-las-predicciones" id="toc-reconciliación-de-las-predicciones" class="nav-link" data-scroll-target="#reconciliación-de-las-predicciones"><span class="toc-section-number">4.2</span>  Reconciliación de las Predicciones</a></li>
+  <li><a href="#enfoque-de-reconciliación-óptima-mint" id="toc-enfoque-de-reconciliación-óptima-mint" class="nav-link" data-scroll-target="#enfoque-de-reconciliación-óptima-mint"><span class="toc-section-number">4.3</span>  Enfoque de Reconciliación Óptima MinT</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Reconciliación en las Predicciones</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p><strong>Matrix notation</strong></p>
+<p>En la sección 2 se definió previamente la notación matricial a utilizar:</p>
+<ul>
+<li>las ecuaciones (2.1.1) y (2.1.3) representan como se agregan los datos bajo la estructura jerárquica de la Figura A</li>
+<li>las ecuaciones (2.2.2) y (2.2.3) representan como se agregan los datos bajo la estructura agrupada de la Figura B.</li>
+</ul>
+<p>Recordemos que estas ecuaciones podríamos imaginarlas como restricciones de agregación o igualdades de adición y utilizando la notación matricial se representan eficientemente.</p>
+<p>Recorsmoe que en la notación matricial compacta, la representación matricial de ambos enfoques queda determinada por la siguiente ecuación:</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{2.2.4}
+  \boldsymbol{y}_t=\boldsymbol{S}\boldsymbol{b}_{t},
+\end{align}
+\]</span></p>
+<p>donde:</p>
+<ul>
+<li><span class="math inline">\(\boldsymbol{y}_t\)</span>: vector <span class="math inline">\(n\)</span>-dimensional con todas las observaciones de la jerarquía en el tiempo <span class="math inline">\(t\)</span>.<br>
+</li>
+<li><span class="math inline">\(\boldsymbol{S}\)</span>: matriz de acumulación.<br>
+</li>
+<li><span class="math inline">\(\boldsymbol{b}_t\)</span>: es un vector <span class="math inline">\(m\)</span>-dimensional de las observaciones en el nivel último inferior de la jerarquía.</li>
+</ul>
+<p>(Con el objetivo de mantener la extensión adecuada, se sugiere al lector regresar a la sección 2 para detalles.)</p>
+<section id="mapeo-con-matrices-mapping-matrices" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="mapeo-con-matrices-mapping-matrices"><span class="header-section-number">4.1</span> Mapeo con Matrices (Mapping matrices)</h2>
+<p>La notación matricial facilita la representación de todos los métodos de predicción de series de tiempo jerárquicos o agrupados.</p>
+<p><em>Predicciones base</em>. - Predecimos todas las series sin considerar restricciones de agregación. - Denotamos <span class="math inline">\(\hat{\boldsymbol{y}}_h\)</span> con <span class="math inline">\(h\)</span> horizonte de predicción. - Apiladas en el mismo orden que los datos <span class="math inline">\(\boldsymbol{y}_t\)</span></p>
+<p>El conjunto de todos los métodos de predicción, ya sea para estructuras jerárquicas o agrupadas, puede representarse por (sólo para métodos generales de reconciliación lineal):</p>
+<p><span class="math display">\[
+\begin{align}
+\tag{4.1.3}
+  \tilde{\boldsymbol{y}}_h=\boldsymbol{S}\boldsymbol{G}\hat{\boldsymbol{y}}_h
+\end{align}
+\]</span></p>
+<p>donde:</p>
+<ul>
+<li><span class="math inline">\(\boldsymbol{G}\)</span> matriz que mapea las predicciones base al nivel inferior.<br>
+</li>
+<li><span class="math inline">\(\boldsymbol{S}\)</span> matriz de acumulación, las anteriores son adicionadas hacia arriba bajo la estructura de agregación para producir el conjunto <strong>predicciones coherentes</strong> <span class="math inline">\(\boldsymbol{y}_h\)</span>.</li>
+</ul>
+<p>La matriz <span class="math inline">\(\boldsymbol{G}\)</span> se define con base en el método implementado:</p>
+<p><em>Ejemplo</em>: bajo la jerarquía: <em>Figura A: diagrama para series de tiempo jerárquicas</em></p>
+<p>Método <strong>bottom-up</strong></p>
+<p><span class="math display">\[
+\boldsymbol{G}=
+  \begin{bmatrix}
+    0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
+    0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0\\
+    0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0\\
+    0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0\\
+    0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1\\
+  \end{bmatrix}.
+\]</span> Notemos que la matriz <span class="math inline">\(\boldsymbol{G}\)</span> está particionada en 2:</p>
+<ul>
+<li>Las columnas de 0’s corresponden a las predicciones base de la series que están por encima del nivel inferior (fondo).</li>
+<li>La matriz identidad de dimensión <span class="math inline">\(m\)</span> recoge las predicciones base del nivel inferior (fondo), que posteriormente son sumadas por la matris <span class="math inline">\(\boldsymbol{S}\)</span></li>
+</ul>
+<hr>
+<p>Método: cualquier <strong>top-down</strong></p>
+<p><span class="math display">\[
+\boldsymbol{G}=
+    \begin{bmatrix}
+      p_1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
+      p_2 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
+      p_3 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
+      p_4 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
+      p_5 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
+    \end{bmatrix}.
+\]</span></p>
+<ul>
+<li>La primer columna corresponde incluye el conjunto de proporciones que distribuyen las predicciones base del máximo nivel superior (top) hacia el nivel inferior (fondo), que posteriormente son adicionadas por la matriz <span class="math inline">\(\boldsymbol{S}\)</span></li>
+<li>El resto de las columnas mapean a 0 las predicciones base que están por debajo del máximo nivel superior de agregación.</li>
+</ul>
+<hr>
+<p>Método: <strong>middle-out</strong>.</p>
+<ol type="1">
+<li>La matriz <span class="math inline">\(\boldsymbol{G}\)</span> es una comnbinación de las dos anteriores.</li>
+<li>Utilizando un cojunto de proporciones, las predicciones base para algún nivel preseleccionado será desagregado hacia el nivel inferior, el resto de las predicciones se mapean a 0.</li>
+<li>Finalmente, las predicciones inferiores (fondo) son sumadas ascendiendo a través de la jerarquía via la matriz de agregación.</li>
+</ol>
+</section>
+<section id="reconciliación-de-las-predicciones" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="reconciliación-de-las-predicciones"><span class="header-section-number">4.2</span> Reconciliación de las Predicciones</h2>
+<p>Los métodos estuadiados (tradicionales) tienen como limitante el hecho de enfocarse en una predicción base desde un solo nivel de agregación para porteriormente agregar o desagregar y generar predicciones coherentes para el resto el resto de las series.</p>
+<p>Sabemos que producto de matrices <span class="math inline">\(\boldsymbol{SG}\)</span> combina y reconcilia todas las predicciones base dando lugar a predicciones coherentes…</p>
+<p>**¿Podemos encontrar la matriz óptima <span class="math inline">\(\boldsymbol{G}\)</span> para obtener la mayor perecisión?</p>
+</section>
+<section id="enfoque-de-reconciliación-óptima-mint" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="enfoque-de-reconciliación-óptima-mint"><span class="header-section-number">4.3</span> Enfoque de Reconciliación Óptima MinT</h2>
+<p>Sin profundizar mucho en este tema, sólo mencionaremos el objetivo, que consiste en buscar la matriz <span class="math inline">\(G\)</span> que minimice la varianza de la predicción <strong>Total</strong> para el conjunto de predicciones coherentes, por lo que se le denomina</p>
+<p><strong>Método de Reconciliación Óptima por Traza Mínima, <em>Minimum Trace (Mint)</em></strong></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copiado");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copiado");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./03-proyecto.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Enfoque tradicional de predicciones a un nivel de agregación</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./05-proyecto.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Predicciones para resolver el Problema de Ventas</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>
